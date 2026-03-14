@@ -1,8 +1,5 @@
-# Environment files — never commit secrets
+# data
 .env
-*.env
-
-# Docker volumes mounted locally
 data/
 
 # OS
@@ -13,3 +10,8 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# misc
+services/recipe-ocr/
+.claude
+CLAUDE.md
