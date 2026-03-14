@@ -18,9 +18,9 @@ ok "setup done."
 
 # ===== create .env file =====
 cp .env.example .env
-echo AUTHENTIK_DB_PASSWORD=$(openssl rand -base64 128 | tr -d '\n') >> .env
-echo AUTHENTIK_SECRET_KEY=$(openssl rand -base64 128 | tr -d '\n') >> .env
-echo IMMICH_DB_PASSWORD=$(openssl rand -base64 128 | tr -d '\n') >> .env
+echo AUTHENTIK_DB_PASSWORD=$(openssl rand -hex 128 | tr -d '\n') >> .env
+echo AUTHENTIK_SECRET_KEY=$(openssl rand -hex 128 | tr -d '\n') >> .env
+echo DB_PASSWORD=$(openssl rand -hex 128 | tr -d '\n') >> .env
 ok ".env file created."
 
 # ===== start services =====
