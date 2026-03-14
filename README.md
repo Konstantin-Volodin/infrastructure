@@ -10,6 +10,7 @@ This repo is meant to stay reproducible, container-first, and easy to fork for s
 |---|---|
 | Pi-hole UI | `http://<tailscale-ip>/admin` |
 | Immich | `http://<tailscale-ip>:2283` |
+| Mealie | `http://<tailscale-ip>:9925` |
 | SSH | `ssh void` |
 
 ## Overview
@@ -19,7 +20,7 @@ This repo is meant to stay reproducible, container-first, and easy to fork for s
 - **Target OS:** Ubuntu Server 24.04 LTS
 - **Access model:** private remote access through Tailscale
 - **Service model:** Docker Compose per service
-- **Current state:** Pi-hole and Immich are installed; Authentik, Caddy, and Nextcloud are next
+- **Current state:** Pi-hole, Immich, and Mealie are installed; Authentik, Caddy, and Nextcloud are next
 
 ## Goals
 
@@ -69,6 +70,7 @@ Tailscale
 void
 ├── Pi-hole     (DNS + ad blocking)
 ├── Immich      (photo + video backup)
+├── Mealie      (recipe manager)
 ├── Authentik   (SSO / identity)
 ├── Caddy       (reverse proxy + HTTPS)
 └── Nextcloud   (files, docs, calendar)
@@ -91,6 +93,7 @@ Design principles:
 - Tailscale installed on `void`
 - Pi-hole installed on `void`
 - Immich installed on `void`
+- Mealie installed on `void`
 
 ### Next
 
@@ -113,6 +116,7 @@ Design principles:
 | 1 | Pi-hole | DNS + ad blocking | Installed |
 | 1 | Tailscale | Private remote access | Installed |
 | 1 | Immich | Photo + video backup | Installed |
+| 1 | Mealie | Recipe manager | Installed |
 | 1 | Authentik | SSO / authentication | Next |
 | 1 | Caddy | Reverse proxy + HTTPS | Planned |
 | 1 | Nextcloud | Files, docs, calendar | Planned |
@@ -134,6 +138,8 @@ infrastructure/
 	│   └── docker-compose.yml
 	├── immich/
 	│   └── docker-compose.yml
+	├── mealie/
+	│   └── docker-compose.yml
 	├── pihole/
 	│   ├── docker-compose.yml
 	│   └── README.md
@@ -149,6 +155,7 @@ Important files:
 - [services/pihole/README.md](services/pihole/README.md) — Pi-hole service notes and bring-up checklist
 - [services/authentik/docker-compose.yml](services/authentik/docker-compose.yml) — Authentik stack definition
 - [services/immich/docker-compose.yml](services/immich/docker-compose.yml) — Immich stack definition
+- [services/mealie/docker-compose.yml](services/mealie/docker-compose.yml) — Mealie stack definition
 
 ## Bootstrapping `void`
 
@@ -188,10 +195,13 @@ The current [.env.example](.env.example) is minimal and will need expansion as m
 Known values referenced by the repo today include:
 
 - `PIHOLE_TIMEZONE`
+- `UPLOAD_LOCATION`
+- `IMMICH_DB_DATA_LOCATION`
 - `IMMICH_DB_PASSWORD`
 - `IMMICH_DB_USER`
 - `IMMICH_DB_NAME`
-- `UPLOAD_LOCATION`
+- `MEALIE_TIMEZONE`
+- `MEALIE_BASE_URL`
 - `AUTHENTIK_POSTGRES_PASSWORD`
 - `AUTHENTIK_SECRET_KEY`
 
