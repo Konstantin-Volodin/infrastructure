@@ -15,6 +15,7 @@
 #   5. fail2ban - basic config to ban IPs after 5 failed SSH attempts for a day
 #   6. network configuration — set static IPs for Ethernet and WiFi
 #   7. docker — install docker engine and docker compose
+#   8. services — start pihole and wireguard
 # =============================================================================
 
 # ===== helpers ====================
@@ -93,7 +94,7 @@ read -rp  "  [?] WiFi interface     (default: wlp2s0):          " WIFI_IF;   WIF
 read -rp  "  [?] Ethernet IP        (default: 192.168.28.100/24): " ETH_IP;  ETH_IP=${ETH_IP:-192.168.28.100/24}
 read -rp  "  [?] WiFi IP            (default: 192.168.28.101/24): " WIFI_IP; WIFI_IP=${WIFI_IP:-192.168.28.101/24}
 read -rp  "  [?] Gateway            (default: 192.168.28.1):    " GATEWAY;  GATEWAY=${GATEWAY:-192.168.28.1}
-read -rp  "  [?] WiFi SSID: " WIFI_SSID
+read -rp  "  [?] WiFi network: " WIFI_SSID
 read -rsp "  [?] WiFi password: " WIFI_PASS
 echo
 
