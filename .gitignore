@@ -13,3 +13,6 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+services/recipe-ocr/
+.claude
