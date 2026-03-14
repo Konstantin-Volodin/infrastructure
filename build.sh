@@ -17,25 +17,23 @@ sudo bash ~/setup.sh
 ok "setup done."
 
 # ===== create .env file =====
-if [ ! -f ~/.env ]; then
-	cp ~/infrastructure/.env.example ~/.env
-
-	# Insert generated secrets into the correct lines
-	sed -i "s/^AUTHENTIK_DB_PASSWORD=.*/AUTHENTIK_DB_PASSWORD=$(openssl rand -base64 32 | tr -d '\n')/" ~/.env
-	sed -i "s/^AUTHENTIK_SECRET_KEY=.*/AUTHENTIK_SECRET_KEY=$(openssl rand -base64 32 | tr -d '\n')/" ~/.env
-	sed -i "s/^IMMICH_DB_PASSWORD=.*/IMMICH_DB_PASSWORD=$(openssl rand -base64 32 | tr -d '\n')/" ~/.env
+cp .env.example .env
+echo AUTHENTIK_DB_PASSWORD=$(openssl rand -base64 128 | tr -d '\n') >> .env
+echo AUTHENTIK_SECRET_KEY=$(openssl rand -base64 128 | tr -d '\n') >> .env
+echo IMMICH_DB_PASSWORD=$(openssl rand -base64 128 | tr -d '\n') >> .env
+ok ".env file created."
 
 # ===== start services =====
 info "starting pihole ..."
-cd ~/pihole && docker compose up -d
+sudo docker compose -f services/pihole/docker-compose.yml --env-file .env up -d
 ok "pihole done."
 
 info "starting immich ..."
-cd ~/immich && docker compose up -d
+sudo docker compose -f services/immich/docker-compose.yml --env-file .env up -d
 ok "immich up."
 
 info "starting mealie ..."
-cd ~/mealie && docker compose up -d
+sudo docker compose -f services/mealie/docker-compose.yml --env-file .env up -d
 ok "mealie up."
 
 # ===== reboot =====
