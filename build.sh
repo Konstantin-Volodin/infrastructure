@@ -36,6 +36,9 @@ info "starting mealie ..."
 sudo docker compose -f services/mealie/docker-compose.yml --env-file .env up -d
 ok "mealie up."
 
+info "starting authentik ..."
+sudo docker compose -f services/authentik/docker-compose.yml
+
 # ===== reboot =====
 read -p "Do you want to reboot void now? [y/N]: " confirm
 if [[ "$confirm" =~ ^[Yy]$ ]]; then
