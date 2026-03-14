@@ -16,8 +16,16 @@ services:
       ALLOW_SIGNUP: "false"
       PUID: 1000
       PGID: 1000
-      TZ: ${MEALIE_TIMEZONE}
+      TZ: ${TIMEZONE}
       BASE_URL: ${MEALIE_BASE_URL}
+
+      # custom theme
+      THEME_LIGHT_PRIMARY: '#2563EB'
+      THEME_LIGHT_ACCENT: '#10B981'
+      THEME_LIGHT_SECONDARY: '#1E293B'
+      THEME_DARK_PRIMARY: '#2563EB'
+      THEME_DARK_ACCENT: '#10B981'
+      THEME_DARK_SECONDARY: '#1E293B'
 
 volumes:
   mealie-data:
