@@ -10,11 +10,8 @@ services:
       - 80:80
       - 443:443
     volumes:
-      - Caddyfile:/etc/caddy/Caddyfile
-      - .data:/data
-      - .config:/config
-      - .static:/static
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./data:/data
+      - ./config:/config
 
 volumes:
-  caddy_data:
-  caddy_config:
