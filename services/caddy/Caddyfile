@@ -1,11 +1,11 @@
 # Immich
 images.void {
     tls internal
-    reverse_proxy 192.168.101.1:2283
+    reverse_proxy 192.168.28.101:2283
 }
 
 # Mealie
 recipes.void {
     tls internal
-    reverse_proxy 192.168.101.1:9925
+    reverse_proxy 192.168.28.101:9925
 }
