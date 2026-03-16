@@ -1,0 +1,17 @@
+# Authelia
+login.void {
+    tls internal
+    reverse_proxy authelia:9091
+}
+
+# Immich
+images.void {
+    tls internal
+    reverse_proxy immich_server:2283
+}
+
+# Mealie
+recipes.void {
+    tls internal
+    reverse_proxy mealie_server:9925
+}

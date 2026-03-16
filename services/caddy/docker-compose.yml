@@ -1,0 +1,20 @@
+# More info at https://caddyserver.com/docs/install#docker
+services:
+  caddy:
+    container_name: caddy
+    image: caddy:latest
+    restart: unless-stopped
+    environment:
+      - TZ=${TIMEZONE}
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - Caddyfile:/etc/caddy/Caddyfile
+      - .data:/data
+      - .config:/config
+      - .static:/static
+
+volumes:
+  caddy_data:
+  caddy_config:
