@@ -1,11 +1,9 @@
 # Immich
 images.tail0d2eab.ts.net {
-    tls internal
     reverse_proxy immich_server:2283
 }
 
 # Mealie
 recipes.tail0d2eab.ts.net {
-    tls internal
     reverse_proxy mealie:9000
 }

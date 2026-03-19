@@ -137,6 +137,7 @@ ok "systemd-resolved stub listener disabled."
 ## ===== tailscale ====================
 info "installing tailscale..."
 curl -fsSL https://tailscale.com/install.sh | sh
+echo 'TS_PERMIT_CERT_UID=root' >> /etc/default/tailscaled
 systemctl enable tailscaled
 ok "tailscale installed. run 'sudo tailscale up' to authenticate."
 
