@@ -1,9 +1,9 @@
 # Immich
-images.tail0d2eab.ts.net {
+images.void.tail0d2eab.ts.net {
     reverse_proxy immich_server:2283
 }
 
 # Mealie
-recipes.tail0d2eab.ts.net {
+recipes.void.tail0d2eab.ts.net {
     reverse_proxy mealie:9000
 }
