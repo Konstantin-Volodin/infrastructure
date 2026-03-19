@@ -76,3 +76,8 @@ services:
 
 volumes:
   model-cache:
+
+networks:
+  net:
+    external: true
+    name: net
