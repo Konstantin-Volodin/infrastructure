@@ -22,6 +22,8 @@ if [ -f .env ]; then
     ok ".env file already exists."
 else
     cp .env.example .env
+    read -rp "  [?] Tailscale OAuth client secret: " ts_authkey
+    echo "TS_AUTHKEY=${ts_authkey}" >> .env
     echo "IMMICH_DB_PASSWORD=$(openssl rand -hex 128 | tr -d '\n')" >> .env
     echo "AUTHENTIK_DB_PASSWORD=$(openssl rand -hex 128 | tr -d '\n')" >> .env
     echo "AUTHENTIK_SECRET_KEY=$(openssl rand -hex 128 | tr -d '\n')" >> .env
