@@ -43,11 +43,11 @@ docker compose --env-file ../../.env down
 docker compose --env-file ../../.env up -d
 ok "immich up."
 
-# info "starting mealie ..."
-# cd ../../services/mealie
-# docker compose --env-file ../../.env down
-# docker compose --env-file ../../.env up -d
-# ok "mealie up."
+info "starting mealie ..."
+cd ../../services/mealie
+docker compose --env-file ../../.env down
+docker compose --env-file ../../.env up -d
+ok "mealie up."
 
 # info "starting authentik ..."
 # cd ../../services/authentik
