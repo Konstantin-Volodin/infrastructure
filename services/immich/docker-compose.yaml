@@ -77,5 +77,3 @@ services:
 
 volumes:
   model-cache:
-  ${TS_IMMICH_DATA}:
-    driver: local
