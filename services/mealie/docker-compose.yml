@@ -27,5 +27,13 @@ services:
       THEME_DARK_ACCENT: '#10B981'
       THEME_DARK_SECONDARY: '#1E293B'
 
+    networks:
+      - net
+
 volumes:
   mealie-data:
+
+networks:
+  net:
+    external: true
+    name: net
