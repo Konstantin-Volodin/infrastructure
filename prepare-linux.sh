@@ -16,7 +16,6 @@
 #   7.  docker + git — install
 #   8.  docker network — create shared 'net' for inter-container routing
 #   9.  pihole — free port 53 (disable systemd-resolved stub listener)
-#  10.  tailscale — install for private remote access
 # =============================================================================
 
 info() { echo "  [·] $*"; }
@@ -124,22 +123,10 @@ apt-get install -y -q docker.io docker-compose-v2 git
 systemctl enable docker
 ok "docker $(docker --version | cut -d' ' -f3 | tr -d ',') and git installed."
 
-## ===== docker network ====================
-info "creating shared docker network..."
-docker network create net 2>/dev/null || true
-ok "docker network 'net' ready."
-
 ## ===== pihole — free port 53 ====================
 info "freeing port 53 for Pi-hole..."
 sed -i 's/#DNSStubListener=yes/DNSStubListener=no/' /etc/systemd/resolved.conf
 ok "systemd-resolved stub listener disabled."
-
-## ===== tailscale ====================
-info "installing tailscale..."
-curl -fsSL https://tailscale.com/install.sh | sh
-echo 'TS_PERMIT_CERT_UID=root' >> /etc/default/tailscaled
-systemctl enable tailscaled
-ok "tailscale installed. run 'sudo tailscale up' to authenticate."
 
 ## ===== done ====================
 echo ""

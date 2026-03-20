@@ -1,0 +1,19 @@
+{
+  "TCP": {
+    "443": {
+      "HTTPS": true
+    }
+  },
+  "Web": {
+    "photos.${TS_CERT_DOMAIN}:443": {
+      "Handlers": {
+        "/": {
+          "Proxy": "http://127.0.0.1:2283"
+        }
+      }
+    }
+  },
+  "AllowFunnel": {
+    "photos.${TS_CERT_DOMAIN}:443": false
+  }
+}
