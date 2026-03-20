@@ -39,7 +39,7 @@ services:
     image: ghcr.io/immich-app/immich-machine-learning:v2
     network_mode: service:ts-immich
     volumes: 
-      - model-cache:/cache
+      - ./data/model-cache:/cache
     env_file: ../../.env
     depends_on:
       - ts-immich
@@ -74,6 +74,3 @@ services:
     restart: always
     healthcheck:
       disable: false
-
-volumes:
-  model-cache:
