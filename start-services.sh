@@ -36,19 +36,19 @@ fi
 # ok "pihole done."
 
 info "starting immich ..."
-cd ../../services/immich
-docker compose down
+cd services/immich
+docker compose --env-file ../../.env down
 docker compose --env-file ../../.env up -d
 ok "immich up."
 
 # info "starting mealie ..."
 # cd ../../services/mealie
-# docker compose down
+# docker compose --env-file ../../.env down
 # docker compose --env-file ../../.env up -d
 # ok "mealie up."
 
 # info "starting authentik ..."
 # cd ../../services/authentik
-# docker compose down
+# docker compose --env-file ../../.env down
 # docker compose --env-file ../../.env up -d
 # ok "authentik up."
