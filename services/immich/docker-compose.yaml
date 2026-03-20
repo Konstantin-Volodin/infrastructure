@@ -9,7 +9,7 @@ services:
       - TS_STATE_DIR=/var/lib/tailscale
       - TS_SERVE_CONFIG=/config/tailscale.json
     volumes:
-      - ${TS_IMMICH_DATA}/state:/var/lib/tailscale
+      - ./data/tailscale/state:/var/lib/tailscale
       - ./config:/config
     devices:
       - /dev/net/tun:/dev/net/tun
