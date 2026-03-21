@@ -1,0 +1,47 @@
+
+services:
+
+  ts-authelia:
+    container_name: ts-authelia
+    image: tailscale/tailscale:latest
+    restart: unless-stopped
+    hostname: auth
+    environment:
+      - TS_AUTHKEY=${TS_AUTHKEY}
+      - TS_EXTRA_ARGS=--advertise-tags=tag:container
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_SERVE_CONFIG=/config/tailscale.json
+    volumes:
+      - ./data/tailscale/state:/var/lib/tailscale
+      - ./config:/config
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - net_admin
+      - sys_module
+
+  authelia:
+    container_name: authelia
+    image: authelia/authelia:latest
+    restart: unless-stopped
+    network_mode: service:ts-authelia
+    depends_on:
+      - ts-authelia
+    expose: 
+      - 9091
+    environment:
+      - X_AUTHELIA_CONFIG_FILTERS=template
+      - TZ=${TIMEZONE}
+      - DOMAIN=${DOMAIN}
+      - EMAIL_FROM=${EMAIL_FROM}
+      - EMAIL_SERVER=${EMAIL_SERVER}
+      - EMAIL_SERVER_PORT=${EMAIL_SERVER_PORT}
+      - EMAIL_SERVER_USER=${EMAIL_SERVER_USER}
+      - EMAIL_SERVER_PASSWORD=${EMAIL_SERVER_PASSWORD}
+      - AUTHELIA_IDENTITY_VALIDATION_RESET_PASSWORD_JWT_SECRET=${AUTHELIA_JWT_PASSWORD}
+      - AUTHELIA_SESSION_SECRET=${AUTHELIA_SESSION_SECRET}
+      - AUTHELIA_STORAGE_ENCRYPTION_KEY=${AUTHELIA_STORAGE_ENCRYPTION_KEY}
+    volumes:
+      - ./config:/config
+      - ./logs:/data/log
+    env_file: ../../.env
