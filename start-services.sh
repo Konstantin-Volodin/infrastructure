@@ -43,7 +43,7 @@ fi
 
 # ===== generate authelia admin =====
 mkdir -p services/authelia/secrets
-docker run -d --rm -v "${PWD}/services/authelia/configuration.yml:/config/configuration.yml" -v "${PWD}/services/authelia/secrets:/config/secrets" --name "temp-authelia" authelia/authelia:latest sleep infinity
+docker run -d --rm -v "${PWD}/services/authelia/config/configuration.yml:/config/configuration.yml" -v "${PWD}/services/authelia/secrets:/config/secrets" --name "temp-authelia" authelia/authelia:latest sleep infinity
 docker exec temp-authelia authelia crypto hash generate --config "/config/configuration.yml" --password "authelia" | grep -oP '(?<=Digest: ).*'
 docker exec temp-authelia authelia crypto pair rsa generate --directory /config/secrets
 mv services/authelia/secrets/private.pem services/authelia/secrets/oidc.jwks.key
