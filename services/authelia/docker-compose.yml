@@ -27,8 +27,6 @@ services:
     network_mode: service:ts-authelia
     depends_on:
       - ts-authelia
-    expose: 
-      - 9091
     environment:
       - X_AUTHELIA_CONFIG_FILTERS=template
       - TZ=${TIMEZONE}
