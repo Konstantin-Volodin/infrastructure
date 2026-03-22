@@ -1,0 +1,18 @@
+---
+###############################################################
+#                         Users Database                      #
+###############################################################
+
+# This file can be used if you do not have an LDAP set up.
+
+# List of users
+users:
+  admin:
+    disabled: false
+    displayname: 'admin'
+    # password is generated in start-services.sh
+    password:
+    email: 'authelia@authelia.com'
+    groups:
+      - 'admins'
+      - 'dev'
