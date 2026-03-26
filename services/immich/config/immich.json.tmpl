@@ -1,0 +1,16 @@
+{
+  "oauth": {
+    "enabled": true,
+    "issuerUrl": "https://auth.${DOMAIN}",
+    "clientId": "immich",
+    "clientSecret": "${IMMICH_OIDC_SECRET}",
+    "scope": "openid email profile",
+    "signingAlgorithm": "RS256",
+    "storageLabelClaim": "preferred_username",
+    "autoRegister": true,
+    "autoLaunch": false,
+    "buttonText": "Login with Authelia",
+    "mobileOverrideEnabled": false,
+    "mobileRedirectUri": ""
+  }
+}
