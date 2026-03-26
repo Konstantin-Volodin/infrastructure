@@ -57,9 +57,3 @@ services:
     networks:
       - immich
 
-networks:
-  proxy:
-    name: proxy
-    external: true
-  immich:
-    name: immich

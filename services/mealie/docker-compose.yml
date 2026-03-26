@@ -32,8 +32,3 @@ services:
       OIDC_AUTO_REDIRECT: "false"
     networks:
       - proxy
-
-networks:
-  proxy:
-    name: proxy
-    external: true

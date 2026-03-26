@@ -73,6 +73,7 @@ ok "proxy network ready."
 # ===== start all services =====
 info "starting all services..."
 cd ${PWD}/services
-docker compose --env-file ../.env down
-docker compose --env-file ../.env up -d
+set -a; source ../.env; set +a
+docker compose down
+docker compose up -d
 ok "all services up."

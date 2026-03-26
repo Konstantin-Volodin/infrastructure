@@ -23,8 +23,3 @@ services:
     env_file: ../../.env
     networks:
       - proxy
-
-networks:
-  proxy:
-    name: proxy
-    external: true
