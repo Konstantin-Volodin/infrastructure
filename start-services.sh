@@ -45,11 +45,16 @@ mv services/authelia/secrets/private.pem services/authelia/secrets/oidc.jwks.key
 mv services/authelia/secrets/public.pem services/authelia/secrets/oidc.jwks.pub
 docker stop temp-authelia
 
-# ===== generate immich config =====
-info "generating immich config..."
+# ===== generate configs from templates =====
 set -a; source .env; set +a
+
+info "generating immich config..."
 envsubst < services/immich/config/immich.json.tmpl > services/immich/config/immich.json
 ok "immich config generated."
+
+info "generating pihole DNS config..."
+envsubst < services/pihole/config/05-void-dns.conf.tmpl > services/pihole/config/05-void-dns.conf
+ok "pihole DNS config generated."
 
 # ===== start all services =====
 info "starting all services..."
