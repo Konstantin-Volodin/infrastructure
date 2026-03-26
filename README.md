@@ -8,8 +8,8 @@
 - Pi-hole (DNS + ad blocking)
 - Immich (photo + video backup)
 - Mealie (recipe manager)
-- Authentik (SSO / identity) - TODO
-- Caddy (reverse proxy + HTTPS) - TODO
+- Authelia (SSO / identity)
+- Caddy (reverse proxy + forward auth)
 - Nextcloud (files, docs, calendar) - TODO
 - Jellyfin (media server) - TODO
 - Sonarr / Radarr (media automation) - TODO
@@ -19,20 +19,22 @@
 
 ### accessing services
 
-| service 		| Via Tailscale 					|
-|---------------|-----------------------------------|
-| SSH 			| `ssh void` 						|
-| Pi-hole UI 	| `http://<tailscale-ip>/admin` 	|
-| Immich 		| `http://<tailscale-ip>:2283` 		|
-| Mealie 		| `http://<tailscale-ip>:9925` 		|
+| service 		| URL 									|
+|---------------|-------------------------------------------|
+| SSH 			| `ssh void` 								|
+| Pi-hole UI 	| `http://<host-ip>:8080/admin` 			|
+| Authelia 		| `https://auth.void.local` 				|
+| Immich 		| `https://photos.void.local` 				|
+| Mealie 		| `https://recipes.void.local` 				|
 
 ## overview
 
 - **nodes:** `void`
 - **target OS:** Ubuntu Server 24.04 LTS
 - **access model:** private remote access through Tailscale
+- **networking model:** Caddy reverse proxy with Authelia forward auth. Pi-hole provides local DNS for `*.void.local` subdomains.
 - **service model:** Docker Compose per service
-- **current state:** Pi-hole, Immich, and Mealie are installed; Authentik next
+- **current state:** Pi-hole, Immich, Mealie, Authelia, and Caddy are installed
 
 ### goals
 - keep the homelab reproducible from this repository
@@ -41,8 +43,9 @@
 - build toward a clean, public, fork-friendly self-hosted stack
 
 ### design principles:
-- services should eventually sit behind consistent URLs
-- authentication should be centralized where practical
+- all services sit behind Caddy as reverse proxy with Authelia forward auth
+- authentication is centralized through Authelia (forward auth + OIDC for supported services)
+- Pi-hole provides DNS resolution for `*.void.local` subdomains
 - repo state should reflect real infrastructure state
 
 ## infrastructure
@@ -85,12 +88,12 @@
 - Pi-hole installed on `void`
 - Immich installed on `void`
 - Mealie installed on `void`
+- Authelia installed on `void`
+- Caddy reverse proxy + Authelia forward auth
 
 ### Next
 
-1. **Authentik** - stand up SSO / identity provider
-2. **Caddy** - add reverse proxy once service naming is settled
-3. **Nextcloud** - add storage / collaboration services after auth and routing are in place
+1. **Nextcloud** - add storage / collaboration services
 
 ### Planned later
 
@@ -106,11 +109,10 @@
 | Phase | Service                | Purpose                | Status     |
 |-------|------------------------|------------------------|------------|
 | 1     | Pi-hole                | DNS + ad blocking      | Installed  |
-| 1     | Tailscale              | Private remote access  | Installed  |
+| 1     | Caddy                  | Reverse proxy + TLS    | Installed  |
+| 1     | Authelia               | SSO / authentication   | Installed  |
 | 1     | Immich                 | Photo + video backup   | Installed  |
 | 1     | Mealie                 | Recipe manager         | Installed  |
-| 1     | Authentik              | SSO / authentication   | Next       |
-| 1     | Caddy                  | Reverse proxy + HTTPS  | Planned    |
 | 2     | Nextcloud              | Files, docs, calendar  | Future     |
 | 2     | Jellyfin               | Media server           | Future     |
 | 2     | Sonarr / Radarr        | Media automation       | Future     |
@@ -120,25 +122,27 @@
 
 
 ## Important files:
-- [services/setup.sh](services/setup.sh) - base host bootstrap script for `void`
+- [prepare-linux.sh](prepare-linux.sh) - base host bootstrap script for `void`
+- [services/caddy/docker-compose.yml](services/caddy/docker-compose.yml) - Caddy reverse proxy
+- [services/caddy/Caddyfile](services/caddy/Caddyfile) - Caddy routing + forward auth config
 - [services/pihole/docker-compose.yml](services/pihole/docker-compose.yml) - Pi-hole stack definition
-- [services/authentik/docker-compose.yml](services/authentik/docker-compose.yml) - Authentik stack definition
+- [services/authelia/docker-compose.yml](services/authelia/docker-compose.yml) - Authelia stack definition
 - [services/immich/docker-compose.yml](services/immich/docker-compose.yml) - Immich stack definition
 - [services/mealie/docker-compose.yml](services/mealie/docker-compose.yml) - Mealie stack definition
 
 
 ## bootstrapping `void`
 
-The base host bootstrap script is [services/setup.sh](services/setup.sh).
+The base host bootstrap script is [prepare-linux.sh](prepare-linux.sh).
 
 At a high level it handles:
 
 - system updates
 - disabling sleep / suspend
-- SSH hardening
-- UFW firewall defaults
-- fail2ban setup
-- static Ethernet and Wi-Fi configuration
+- SSH hardening (pubkey only, no root login)
+- UFW firewall defaults (deny all except SSH, DNS, HTTP, HTTPS)
+- fail2ban setup (5 failed SSH attempts = 24h ban)
+- static Ethernet and Wi-Fi configuration via Netplan
 - Docker installation
 - disabling the systemd DNS stub listener so Pi-hole can use port `53`
 
@@ -148,7 +152,9 @@ This script is intended for initial host preparation before the service stack is
 ## Networking notes
 
 - **LAN setup:** xxx.xxx.x.100 for void:cable and xxx.xxx.x.101 for void:wifi.
-- **Tailscale:** not setup yet but will be used for remote access, so no port forwarding or external DNS configuration is needed.
+- **DNS:** Pi-hole provides a wildcard `*.void.local` record pointing to the host IP. All services are accessed via `<service>.void.local` subdomains.
+- **Reverse proxy:** Caddy terminates TLS (internal CA) and routes traffic to services by hostname. Authelia forward auth protects all routes.
+- **Remote access:** Tailscale provides private VPN access to the host. Services are reachable over Tailscale as long as the client uses Pi-hole for DNS.
 
 
 ## Constraints and upgrade notes
@@ -156,4 +162,3 @@ This script is intended for initial host preparation before the service stack is
 - **RAM:** 8 GB is enough for the foundation stack, but the media stack may benefit from 16 GB or more
 - **Storage:** 256 GB is fine for infrastructure services but too small for a serious media library
 - **Drive expansion:** `void` has room for the current NVMe drive plus an optional SATA drive
-- **No external accounts required:** Tailscale covers private remote access with no third-party dependency beyond Tailscale itself
