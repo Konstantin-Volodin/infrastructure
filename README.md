@@ -23,16 +23,16 @@
 |---------------|-------------------------------------------|
 | SSH 			| `ssh void` 								|
 | Pi-hole UI 	| `http://<host-ip>:8080/admin` 			|
-| Authelia 		| `https://auth.void.local` 				|
-| Immich 		| `https://photos.void.local` 				|
-| Mealie 		| `https://recipes.void.local` 				|
+| Authelia 		| `https://auth.voxlab.home` 				|
+| Immich 		| `https://photos.voxlab.home` 				|
+| Mealie 		| `https://recipes.voxlab.home` 				|
 
 ## overview
 
 - **nodes:** `void`
 - **target OS:** Ubuntu Server 24.04 LTS
 - **access model:** private remote access through Tailscale
-- **networking model:** Caddy reverse proxy with Authelia forward auth. Pi-hole provides local DNS for `*.void.local` subdomains.
+- **networking model:** Caddy reverse proxy with Authelia forward auth. Pi-hole provides local DNS for `*.voxlab.home` subdomains.
 - **service model:** Docker Compose per service
 - **current state:** Pi-hole, Immich, Mealie, Authelia, and Caddy are installed
 
@@ -45,7 +45,7 @@
 ### design principles:
 - all services sit behind Caddy as reverse proxy with Authelia forward auth
 - authentication is centralized through Authelia (forward auth + OIDC for supported services)
-- Pi-hole provides DNS resolution for `*.void.local` subdomains
+- Pi-hole provides DNS resolution for `*.voxlab.home` subdomains
 - repo state should reflect real infrastructure state
 
 ## infrastructure
@@ -152,7 +152,7 @@ This script is intended for initial host preparation before the service stack is
 ## Networking notes
 
 - **LAN setup:** xxx.xxx.x.100 for void:cable and xxx.xxx.x.101 for void:wifi.
-- **DNS:** Pi-hole provides a wildcard `*.void.local` record pointing to the host IP. All services are accessed via `<service>.void.local` subdomains.
+- **DNS:** Pi-hole provides a wildcard `*.voxlab.home` record pointing to the host IP. All services are accessed via `<service>.voxlab.home` subdomains.
 - **Reverse proxy:** Caddy terminates TLS (internal CA) and routes traffic to services by hostname. Authelia forward auth protects all routes.
 - **Remote access:** Tailscale provides private VPN access to the host. Services are reachable over Tailscale as long as the client uses Pi-hole for DNS.
 
