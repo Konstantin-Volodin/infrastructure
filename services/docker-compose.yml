@@ -3,10 +3,6 @@
 #   Stop:           docker compose down
 #   Destroy:        docker compose down -v
 
-networks:
-  proxy:
-    name: proxy
-
 include:
   # APPS
   - immich/docker-compose.yml # photo management
