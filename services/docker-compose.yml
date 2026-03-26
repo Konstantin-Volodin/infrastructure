@@ -12,17 +12,22 @@ networks:
 
 include:
   # APPS
-  - immich/docker-compose.yml # photo management
-  - mealie/docker-compose.yml # recipe management
+  - path: immich/docker-compose.yml
+    env_file: ../.env
+  - path: mealie/docker-compose.yml
+    env_file: ../.env
 
   # CORE
-  - caddy/docker-compose.yml # reverse proxy + TLS
-  - pihole/docker-compose.yml # DNS + ad blocking
-  # - homepage/docker-compose.yml # Dashboard for server home page
+  - path: caddy/docker-compose.yml
+    env_file: ../.env
+  - path: pihole/docker-compose.yml
+    env_file: ../.env
+  # - path: homepage/docker-compose.yml # Dashboard for server home page
 
   # SECURITY
-  - authelia/docker-compose.yml # SSO + 2FA Authentication
-  # - crowdsec/docker-compose.yml # IP Banning + Traffic Monitoring
+  - path: authelia/docker-compose.yml
+    env_file: ../.env
+  # - path: crowdsec/docker-compose.yml # IP Banning + Traffic Monitoring
 
   # # MAINTENANCE
   # - diun/docker-compose.yml # Docker Image Update Notifier
