@@ -13,6 +13,14 @@ services:
       FTLCONF_dns_listeningMode: 'ALL'
     volumes:
       - './etc-pihole:/etc/pihole'
+      - './config/05-void-dns.conf:/etc/dnsmasq.d/05-void-dns.conf:ro'
     cap_add:
       - SYS_NICE
     restart: unless-stopped
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    name: proxy
+    external: true
