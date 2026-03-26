@@ -1,0 +1,23 @@
+# Usage
+#   Start:          docker compose up
+#   Stop:           docker compose down
+#   Destroy:        docker compose down -v
+
+include:
+  # APPS
+  - immich/docker-compose.yml # photo management
+  - mealie/docker-compose.yml # recipe management
+
+  # CORE
+  - caddy/docker-compose.yml # reverse proxy + TLS
+  - pihole/docker-compose.yml # DNS + ad blocking
+  # - homepage/docker-compose.yml # Dashboard for server home page
+
+  # SECURITY
+  - authelia/docker-compose.yml # SSO + 2FA Authentication
+  # - crowdsec/docker-compose.yml # IP Banning + Traffic Monitoring
+
+  # # MAINTENANCE
+  # - diun/docker-compose.yml # Docker Image Update Notifier
+  # - portainer/docker-compose.yml # Container management
+  # - watchtower/docker-compose.yml # Container auto-updator
