@@ -37,13 +37,19 @@ else
 fi
 
 # ===== generate authelia admin =====
-mkdir -p services/authelia/secrets
-docker run -d --rm -v "${PWD}/services/authelia/config/configuration.yml:/config/configuration.yml" -v "${PWD}/services/authelia/secrets:/config/secrets" --name "temp-authelia" authelia/authelia:latest sleep infinity
-docker exec temp-authelia authelia crypto hash generate --config "/config/configuration.yml" --password "authelia" | grep -oP '(?<=Digest: ).*'
-docker exec temp-authelia authelia crypto pair rsa generate --directory /config/secrets
-mv services/authelia/secrets/private.pem services/authelia/secrets/oidc.jwks.key
-mv services/authelia/secrets/public.pem services/authelia/secrets/oidc.jwks.pub
-docker stop temp-authelia
+if [ -f services/authelia/secrets/oidc.jwks.key ]; then
+    ok "authelia keys already exist, skipping generation."
+else
+    info "generating authelia admin + OIDC keys..."
+    mkdir -p services/authelia/secrets
+    docker run -d --rm -v "${PWD}/services/authelia/config/configuration.yml:/config/configuration.yml" -v "${PWD}/services/authelia/secrets:/config/secrets" --name "temp-authelia" authelia/authelia:latest sleep infinity
+    docker exec temp-authelia authelia crypto hash generate --config "/config/configuration.yml" --password "authelia" | grep -oP '(?<=Digest: ).*'
+    docker exec temp-authelia authelia crypto pair rsa generate --directory /config/secrets
+    mv services/authelia/secrets/private.pem services/authelia/secrets/oidc.jwks.key
+    mv services/authelia/secrets/public.pem services/authelia/secrets/oidc.jwks.pub
+    docker stop temp-authelia
+    ok "authelia keys generated."
+fi
 
 # ===== generate configs from templates =====
 set -a; source .env; set +a
