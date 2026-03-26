@@ -8,7 +8,7 @@ identity_providers:
         client_name: 'Immich'
         client_secret: '{{ env "IMMICH_OIDC_SECRET" }}'
         redirect_uris:
-          - 'https://photos.{{ env "TS_DOMAIN" }}/auth/login'
+          - 'https://photos.{{ env "DOMAIN" }}/auth/login'
         scopes:
           - 'openid'
           - 'email'
@@ -19,7 +19,7 @@ identity_providers:
         client_name: 'Mealie'
         client_secret: '{{ env "MEALIE_OIDC_SECRET" }}'
         redirect_uris:
-          - 'https://recipes.{{ env "TS_DOMAIN" }}/login'
+          - 'https://recipes.{{ env "DOMAIN" }}/login'
         scopes:
           - 'openid'
           - 'email'
