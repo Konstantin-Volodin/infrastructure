@@ -24,7 +24,7 @@ else
     cp .env.example .env
 
     # immich database password
-    echo "IMMICH_DB_PASSWORD=$(openssl rand -hex 128 | tr -d '\n')" >> .env
+    echo "DB_PASSWORD=$(openssl rand -hex 128 | tr -d '\n')" >> .env
 
     # authelia secrets
     echo "AUTHELIA_JWT_PASSWORD=$(openssl rand -hex 128 | tr -d '\n')" >> .env
