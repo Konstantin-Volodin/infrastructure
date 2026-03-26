@@ -62,6 +62,10 @@ info "generating pihole DNS config..."
 envsubst < services/pihole/config/05-void-dns.conf.tmpl > services/pihole/config/05-void-dns.conf
 ok "pihole DNS config generated."
 
+# ===== create docker network =====
+docker network inspect proxy >/dev/null 2>&1 || docker network create proxy
+ok "proxy network ready."
+
 # ===== start all services =====
 info "starting all services..."
 cd ${PWD}/services
