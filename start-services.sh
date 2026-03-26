@@ -32,6 +32,10 @@ else
     echo "AUTHELIA_STORAGE_ENCRYPTION_KEY=$(openssl rand -hex 128 | tr -d '\n')" >> .env
     echo "AUTHELIA_OIDC_HMAC_SECRET=$(openssl rand -hex 128 | tr -d '\n')" >> .env
 
+    # oidc client secrets (must match authelia identity provider config)
+    echo "IMMICH_OIDC_SECRET=$(openssl rand -hex 128 | tr -d '\n')" >> .env
+    echo "MEALIE_OIDC_SECRET=$(openssl rand -hex 128 | tr -d '\n')" >> .env
+
     # done
     ok ".env file created."
 fi
