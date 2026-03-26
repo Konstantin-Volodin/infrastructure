@@ -47,7 +47,13 @@ else
     info "generating authelia admin + OIDC keys..."
     mkdir -p services/authelia/secrets
     docker run -d --rm -v "${PWD}/services/authelia/config/configuration.yml:/config/configuration.yml" -v "${PWD}/services/authelia/secrets:/config/secrets" --name "temp-authelia" authelia/authelia:latest sleep infinity
-    docker exec temp-authelia authelia crypto hash generate --config "/config/configuration.yml" --password "authelia" | grep -oP '(?<=Digest: ).*'
+
+    # generate admin password hash and write it to users_database.yml
+    ADMIN_HASH=$(docker exec temp-authelia authelia crypto hash generate --config "/config/configuration.yml" --password "authelia" | grep -oP '(?<=Digest: ).*')
+    sed -i "s|^    password:.*|    password: '$ADMIN_HASH'|" services/authelia/config/users_database.yml
+    ok "admin password hash written."
+
+    # generate OIDC RSA keypair
     docker exec temp-authelia authelia crypto pair rsa generate --directory /config/secrets
     mv services/authelia/secrets/private.pem services/authelia/secrets/oidc.jwks.key
     mv services/authelia/secrets/public.pem services/authelia/secrets/oidc.jwks.pub
@@ -69,6 +75,12 @@ ok "pihole DNS config generated."
 # ===== create docker network =====
 docker network inspect proxy >/dev/null 2>&1 || docker network create proxy
 ok "proxy network ready."
+
+# ===== fix ownership of git-tracked files =====
+# Docker runs as root and may write to mounted config dirs, making git pull fail.
+REAL_USER="${SUDO_USER:-$USER}"
+git ls-files -z | xargs -0 chown "$REAL_USER":"$REAL_USER"
+ok "git-tracked file ownership fixed for $REAL_USER."
 
 # ===== start all services =====
 info "starting all services..."
