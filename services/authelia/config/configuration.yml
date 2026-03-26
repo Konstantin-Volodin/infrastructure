@@ -50,7 +50,7 @@ session:
   remember_me: '1M'
   # secret: '{{ env "AUTHELIA_SESSION_SECRET" }}'
   cookies:
-      domain: '{{ env "DOMAIN" }}'
+    - domain: '{{ env "DOMAIN" }}'
       authelia_url: 'https://auth.{{ env "DOMAIN" }}'
       same_site: 'lax'
 
