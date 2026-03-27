@@ -109,7 +109,8 @@ until docker exec pihole pihole status 2>/dev/null | grep -q "blocking is enable
 ok "pihole is ready."
 
 info "configuring pihole wildcard DNS for *.${DOMAIN}..."
-docker exec pihole pihole-FTL --config misc.dnsmasq_lines "[\"address=/.${DOMAIN}/${HOST_IP}\"]"
+TAILSCALE_IP=$(tailscale ip -4)
+docker exec pihole pihole-FTL --config misc.dnsmasq_lines "[\"address=/.${DOMAIN}/${TAILSCALE_IP}\"]"
 ok "pihole DNS configured."
 
 # ===== fix ownership for git pull =====
