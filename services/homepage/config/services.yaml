@@ -15,7 +15,7 @@
 - Core:
     - Pi-hole:
         icon: pi-hole
-        href: https://dns.{{HOMEPAGE_VAR_DOMAIN}}
+        href: https://dns.{{HOMEPAGE_VAR_DOMAIN}}/admin/
         description: DNS
         server: my-docker
         container: pihole

@@ -39,7 +39,7 @@ dns.{$DOMAIN} {
 	reverse_proxy pihole:80
 }
 
-dash.{$DOMAIN} {
+apps.{$DOMAIN} {
 	tls internal
 	import authelia
 	reverse_proxy homepage:3000

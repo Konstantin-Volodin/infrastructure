@@ -7,7 +7,7 @@ services:
       - ./config:/app/config
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
-      HOMEPAGE_ALLOWED_HOSTS: dash.${DOMAIN}
+      HOMEPAGE_ALLOWED_HOSTS: apps.${DOMAIN}
       HOMEPAGE_VAR_DOMAIN: ${DOMAIN}
       HOMEPAGE_VAR_HOST_IP: ${HOST_IP}
     networks:

@@ -32,12 +32,12 @@ sudo bash start-services.sh
 
 | Service               | URL                              | Status    |
 |-----------------------|----------------------------------|-----------|
-| Pi-hole               | `https://dns.voxlab.home`        | Installed |
+| Pi-hole               | `https://dns.voxlab.home/admin/` | Installed |
 | Caddy                 | —                                | Installed |
 | Authelia              | `https://auth.voxlab.home`       | Installed |
 | Immich                | `https://photos.voxlab.home`     | Installed |
 | Mealie                | `https://recipes.voxlab.home`    | Installed |
-| Homepage              | `https://dash.voxlab.home`       | Planned   |
+| Homepage              | `https://apps.voxlab.home`       | Planned   |
 | Diun                  | —                                | Planned   |
 | Nextcloud             | —                                | Planned   |
 | Jellyfin              | —                                | Planned   |
