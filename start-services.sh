@@ -112,7 +112,7 @@ info "configuring pihole wildcard DNS for *.${DOMAIN}..."
 docker exec pihole pihole-FTL --config misc.dnsmasq_lines "[\"address=/.${DOMAIN}/${HOST_IP}\"]"
 ok "pihole DNS configured."
 
-# ===== fix ownership of repo files =====
-# sudo and Docker run as root, making git pull fail for the real user.
-chown -R "$REAL_USER":"$REAL_USER" .
-ok "repo ownership fixed for $REAL_USER."
+# ===== fix ownership for git pull =====
+# only fix git-tracked files so pull works; leave secrets/data root-owned.
+git ls-files -z | xargs -0 chown "$REAL_USER":"$REAL_USER"
+ok "git-tracked file ownership fixed for $REAL_USER."
