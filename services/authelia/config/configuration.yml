@@ -78,6 +78,7 @@ identity_providers:
         client_name: 'Immich'
         client_secret: '{{ env "IMMICH_OIDC_SECRET" }}'
         token_endpoint_auth_method: 'client_secret_post'
+        consent_mode: 'implicit'
         redirect_uris:
           - 'https://photos.{{ env "DOMAIN" }}/auth/login'
         scopes:
@@ -89,7 +90,8 @@ identity_providers:
       - client_id: 'mealie'
         client_name: 'Mealie'
         client_secret: '{{ env "MEALIE_OIDC_SECRET" }}'
-        token_endpoint_auth_method: 'client_secret_post'
+        token_endpoint_auth_method: 'client_secret_basic'
+        consent_mode: 'implicit'
         redirect_uris:
           - 'https://recipes.{{ env "DOMAIN" }}/login'
         scopes:
