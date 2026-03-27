@@ -1,0 +1,36 @@
+# Use our own internal CA for TLS
+{
+	pki {
+		ca local {
+			root {
+				cert /pki/internal-ca.crt
+				key  /pki/internal-ca.key
+			}
+		}
+	}
+}
+
+# Authelia forward auth snippet
+(authelia) {
+	forward_auth authelia:9091 {
+		uri /api/authz/forward-auth
+		copy_headers Remote-User Remote-Groups Remote-Name Remote-Email
+	}
+}
+
+auth.{$DOMAIN} {
+	tls internal
+	reverse_proxy authelia:9091
+}
+
+photos.{$DOMAIN} {
+	tls internal
+	import authelia
+	reverse_proxy immich-server:2283
+}
+
+recipes.{$DOMAIN} {
+	tls internal
+	import authelia
+	reverse_proxy mealie:9000
+}

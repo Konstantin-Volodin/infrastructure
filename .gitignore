@@ -3,6 +3,15 @@
 .env
 data/
 
+# generated files (contain secrets or are derived from templates)
+services/authelia/config/oidc.pem
+services/immich/config/immich.json
+services/pihole/config/05-void-dns.conf
+
+# caddy auto-generated state
+services/caddy/data/
+services/caddy/config/
+
 # OS
 .DS_Store
 Thumbs.db

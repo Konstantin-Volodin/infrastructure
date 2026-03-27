@@ -1,159 +1,89 @@
-# self-hosted lab `void`.
-- reproducible
-- container-first
-- infrastructure as code
+# void
 
+Reproducible, container-first homelab. Infrastructure as code.
 
-### services:
-- Pi-hole (DNS + ad blocking)
-- Immich (photo + video backup)
-- Mealie (recipe manager)
-- Authentik (SSO / identity) - TODO
-- Caddy (reverse proxy + HTTPS) - TODO
-- Nextcloud (files, docs, calendar) - TODO
-- Jellyfin (media server) - TODO
-- Sonarr / Radarr (media automation) - TODO
-- Prowlarr (indexer management) - TODO
-- qBittorrent + Gluetun (torrenting over VPN) - TODO
-- book management platform (TBD)
+## Quick start
 
-### accessing services
+```bash
+# 1. provision the host
+git clone git@github.com:Konstantin-Volodin/infrastructure.git
+cd infrastructure
+sudo bash prepare-linux.sh
 
-| service 		| Via Tailscale 					|
-|---------------|-----------------------------------|
-| SSH 			| `ssh void` 						|
-| Pi-hole UI 	| `http://<tailscale-ip>/admin` 	|
-| Immich 		| `http://<tailscale-ip>:2283` 		|
-| Mealie 		| `http://<tailscale-ip>:9925` 		|
+# 2. start services
+sudo bash start-services.sh
+```
 
-## overview
+`prepare-linux.sh` handles system updates, SSH hardening, UFW firewall, fail2ban, static networking, Docker, and disabling the systemd DNS stub so Pi-hole can bind port 53. \
+`start-services.sh` generates secrets, creates the `.env`, builds Authelia keys, and brings up all containers.
 
-- **nodes:** `void`
-- **target OS:** Ubuntu Server 24.04 LTS
-- **access model:** private remote access through Tailscale
-- **service model:** Docker Compose per service
-- **current state:** Pi-hole, Immich, and Mealie are installed; Authentik next
+### Post-setup
 
-### goals
-- keep the homelab reproducible from this repository
-- run services in containers instead of ad-hoc host config
-- access services remotely without relying on external services
-- build toward a clean, public, fork-friendly self-hosted stack
+**Tailscale DNS** - route `*.voxlab.home` queries to Pi-hole:
+1. Get void's Tailscale IP: `tailscale ip -4`
+2. Tailscale admin → DNS → Nameservers → add custom nameserver with the `100.x.x.x` address
+3. Restrict to domain: `voxlab.home`
 
-### design principles:
-- services should eventually sit behind consistent URLs
-- authentication should be centralized where practical
-- repo state should reflect real infrastructure state
+**Authelia first login** - get the one-time password: `sudo docker exec authelia cat /data/notification.txt`
 
-## infrastructure
+**Pihole login** - `sudo docker logs pihole | grep "password"`
 
-### `void` - active homelab node
+## Services
 
-| Item           | Value                                   |
-|----------------|-----------------------------------------|
-| name           | `void`                                  |
-| role           | primary homelab node                    |
-| hardware       | Lenovo ThinkCentre M710q                |
-| CPU            | Intel Core i5-7500T                     |
-| RAM            | 8 GB installed, upgradeable up to 32 GB |
-| storage        | 256 GB total                            |
-| drive layout   | 1x NVMe installed, optional 1x SATA slot|
-| OS             | Ubuntu Server 24.04 LTS                 |
+| Service               | URL                              | Status    |
+|-----------------------|----------------------------------|-----------|
+| Pi-hole               | `http://<host-ip>:8080/admin`    | Installed |
+| Caddy                 | —                                | Installed |
+| Authelia              | `https://auth.voxlab.home`       | Installed |
+| Immich                | `https://photos.voxlab.home`     | Installed |
+| Mealie                | `https://recipes.voxlab.home`    | Installed |
+| Nextcloud             | —                                | Planned   |
+| Jellyfin              | —                                | Planned   |
+| Sonarr / Radarr       | —                                | Planned   |
+| Prowlarr              | —                                | Planned   |
+| qBittorrent + Gluetun | —                                | Planned   |
 
+### Architecture
 
-### `core` - workstation
-`core` is not part of the homelab service stack. It is a separate workstation machine that may be used to manage the lab.
+- Reverse proxy: Caddy terminates TLS (internal CA), routes by hostname
+- Auth: Authelia forward auth for all routes + OIDC for Immich and Mealie
+- DNS: Pi-hole serves wildcard `*.voxlab.home` to host IP
+- Remote access: Tailscale VPN + Pi-hole DNS
+- Containers: Docker Compose per service with shared `proxy` network
 
-| Item    | Value                            |
-|---------|----------------------------------|
-| role    | External workstation             |
-| CPU     | AMD Ryzen 5 5600X                |
-| GPU     | NVIDIA RTX 3060 Ti *(upgrade?)*  |
-| RAM     | 32 GB                            |
-| storage | 1 TB NVMe + 2 TB SATA            |
+## Key files
 
-> **Note:** Considering a GPU upgrade for `core`? :)
+| File                                | Purpose                                       |
+|------------------------------------|-----------------------------------------------|
+| prepare-linux.sh                    | Host bootstrap                                |
+| start-services.sh                   | Secret generation + startup                   |
+| services/docker-compose.yml         | Top-level compose (includes all services)     |
+| services/caddy/Caddyfile            | Routing + forward auth                        |
 
-## Current status
+## Hardware
 
-### Completed
+### void (homelab node)
+- hardware: Lenovo ThinkCentre M710q
+- CPU: Intel Core i5 7500T
+- RAM: 8 GB (max 32 GB)
+- storage: 256 GB NVMe (SATA expansion available)
+- OS: Ubuntu Server 24.04 LTS
 
-- Ubuntu Server installed on `void`
-- Base bootstrap script created for host setup
-- Docker installed on `void`
-- Tailscale installed on `void`
-- Pi-hole installed on `void`
-- Immich installed on `void`
-- Mealie installed on `void`
+### abyss (media node)
+- hardware: planned NAS build
 
-### Next
+### core (workstation) (to convert to 'synapse' node)
+- hardware: Custom desktop build
+- CPU: AMD Ryzen 5 5600X
+- RAM: 32 GB
+- storage: 1 TB NVMe + 2 TB SATA (4xSATA + 2x3.5" bays total)
+- GPU: NVIDIA RTX 3060 Ti
+- OS: Windows 11
 
-1. **Authentik** - stand up SSO / identity provider
-2. **Caddy** - add reverse proxy once service naming is settled
-3. **Nextcloud** - add storage / collaboration services after auth and routing are in place
+### core
+- hardware: planned laptop upgrade to ssh into stuff on the go
 
-### Planned later
+## Constraints
 
-- books
-- Jellyfin
-- Sonarr / Radarr
-- Prowlarr
-- qBittorrent + Gluetun
-- Other optional self-hosted services such as Uptime Kuma, Vaultwarden, Gitea, Home Assistant
-
-## Service roadmap
-
-| Phase | Service                | Purpose                | Status     |
-|-------|------------------------|------------------------|------------|
-| 1     | Pi-hole                | DNS + ad blocking      | Installed  |
-| 1     | Tailscale              | Private remote access  | Installed  |
-| 1     | Immich                 | Photo + video backup   | Installed  |
-| 1     | Mealie                 | Recipe manager         | Installed  |
-| 1     | Authentik              | SSO / authentication   | Next       |
-| 1     | Caddy                  | Reverse proxy + HTTPS  | Planned    |
-| 2     | Nextcloud              | Files, docs, calendar  | Future     |
-| 2     | Jellyfin               | Media server           | Future     |
-| 2     | Sonarr / Radarr        | Media automation       | Future     |
-| 2     | Prowlarr               | Indexer management     | Future     |
-| 2     | qBittorrent + Gluetun  | Torrenting over VPN    | Future     |
-| 2     | Book management        | TBD                    | Future     |
-
-
-## Important files:
-- [services/setup.sh](services/setup.sh) - base host bootstrap script for `void`
-- [services/pihole/docker-compose.yml](services/pihole/docker-compose.yml) - Pi-hole stack definition
-- [services/authentik/docker-compose.yml](services/authentik/docker-compose.yml) - Authentik stack definition
-- [services/immich/docker-compose.yml](services/immich/docker-compose.yml) - Immich stack definition
-- [services/mealie/docker-compose.yml](services/mealie/docker-compose.yml) - Mealie stack definition
-
-
-## bootstrapping `void`
-
-The base host bootstrap script is [services/setup.sh](services/setup.sh).
-
-At a high level it handles:
-
-- system updates
-- disabling sleep / suspend
-- SSH hardening
-- UFW firewall defaults
-- fail2ban setup
-- static Ethernet and Wi-Fi configuration
-- Docker installation
-- disabling the systemd DNS stub listener so Pi-hole can use port `53`
-
-This script is intended for initial host preparation before the service stack is layered on top.
-
-
-## Networking notes
-
-- **LAN setup:** xxx.xxx.x.100 for void:cable and xxx.xxx.x.101 for void:wifi.
-- **Tailscale:** not setup yet but will be used for remote access, so no port forwarding or external DNS configuration is needed.
-
-
-## Constraints and upgrade notes
-
-- **RAM:** 8 GB is enough for the foundation stack, but the media stack may benefit from 16 GB or more
-- **Storage:** 256 GB is fine for infrastructure services but too small for a serious media library
-- **Drive expansion:** `void` has room for the current NVMe drive plus an optional SATA drive
-- **No external accounts required:** Tailscale covers private remote access with no third-party dependency beyond Tailscale itself
+- RAM: 8 GB for current stack; media services may need 16 GB+
+- Storage: 256 GB tight for media, SATA expansion available
