@@ -93,11 +93,7 @@ fi
 docker network inspect proxy >/dev/null 2>&1 || docker network create proxy
 ok "proxy network ready."
 
-# ===== fix ownership of git-tracked files =====
-# Docker runs as root and may write to mounted config dirs, making git pull fail.
 REAL_USER="${SUDO_USER:-$USER}"
-git ls-files -z | xargs -0 chown "$REAL_USER":"$REAL_USER"
-ok "git-tracked file ownership fixed for $REAL_USER."
 
 # ===== start all services =====
 info "starting all services..."
@@ -115,3 +111,8 @@ ok "pihole is ready."
 info "configuring pihole wildcard DNS for *.${DOMAIN}..."
 docker exec pihole pihole-FTL --config misc.dnsmasq_lines "[\"address=/.${DOMAIN}/${HOST_IP}\"]"
 ok "pihole DNS configured."
+
+# ===== fix ownership of repo files =====
+# sudo and Docker run as root, making git pull fail for the real user.
+chown -R "$REAL_USER":"$REAL_USER" .
+ok "repo ownership fixed for $REAL_USER."
