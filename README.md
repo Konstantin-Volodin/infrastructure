@@ -26,7 +26,12 @@ sudo bash start-services.sh
 
 **Authelia first login** - get the one-time password: `sudo docker exec authelia cat /data/notification.txt`
 
-**Pihole login** - `sudo docker logs pihole | grep "password"`
+**Pihole login** - password to access pihole website `sudo docker logs pihole | grep "password"`
+
+**Trust the internal CA** - Caddy uses a self-signed CA for TLS. Client devices need to trust it to avoid certificate warnings.
+1. Download the CA cert from void: `scp vox@void:~/infrastructure/services/caddy/pki/internal-ca.crt .`
+2. Firefox (PC): Settings → Privacy & Security → Certificates → View Certificates → Authorities → Import → check "Trust this CA to identify websites"
+3. Android: Settings → Security → Encryption & credentials → Install a certificate → CA certificate
 
 ## Services
 
