@@ -11,10 +11,8 @@ services:
     environment:
       TZ: ${TIMEZONE}
       FTLCONF_dns_listeningMode: 'ALL'
-      FTLCONF_misc_etc_dnsmasq_d: 'true'
     volumes:
       - './etc-pihole:/etc/pihole'
-      - './config/05-void-dns.conf:/etc/dnsmasq.d/05-void-dns.conf:ro'
     cap_add:
       - SYS_NICE
     restart: unless-stopped

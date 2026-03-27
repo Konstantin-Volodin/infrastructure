@@ -68,9 +68,6 @@ info "generating immich config..."
 envsubst < services/immich/config/immich.json.tmpl > services/immich/config/immich.json
 ok "immich config generated."
 
-info "generating pihole DNS config..."
-envsubst < services/pihole/config/05-void-dns.conf.tmpl > services/pihole/config/05-void-dns.conf
-ok "pihole DNS config generated."
 
 
 # ===== create docker network =====
@@ -90,3 +87,12 @@ set -a; source ../.env; set +a
 docker compose down
 docker compose up -d
 ok "all services up."
+
+# ===== configure pihole wildcard DNS =====
+info "waiting for pihole to be ready..."
+until docker exec pihole pihole status 2>/dev/null | grep -q "FTL is listening"; do sleep 2; done
+ok "pihole is ready."
+
+info "configuring pihole wildcard DNS for *.${DOMAIN}..."
+docker exec pihole pihole-FTL --config misc.dnsmasq_lines "[\"address=/.${DOMAIN}/${HOST_IP}\"]"
+ok "pihole DNS configured."
