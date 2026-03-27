@@ -16,3 +16,5 @@ services:
     cap_add:
       - SYS_NICE
     restart: unless-stopped
+    networks:
+      - proxy

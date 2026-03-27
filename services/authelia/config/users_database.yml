@@ -1,0 +1,18 @@
+---
+###############################################################
+#                         Users Database                      #
+###############################################################
+
+# This file can be used if you do not have an LDAP set up.
+
+# List of users
+users:
+  vox:
+    disabled: false
+    displayname: 'vox'
+    # password is generated in start-services.sh
+    password:
+    email: 'volodin.kostia@gmail.com'
+    groups:
+      - 'admins'
+      - 'dev'

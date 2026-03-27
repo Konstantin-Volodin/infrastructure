@@ -1,0 +1,35 @@
+# Usage
+#   Start:          docker compose up
+#   Stop:           docker compose down
+#   Destroy:        docker compose down -v
+
+networks:
+  proxy:
+    name: proxy
+    external: true
+  immich:
+    name: immich
+
+include:
+  # APPS
+  - path: immich/docker-compose.yml
+    env_file: ../.env
+  - path: mealie/docker-compose.yml
+    env_file: ../.env
+
+  # CORE
+  - path: caddy/docker-compose.yml
+    env_file: ../.env
+  - path: pihole/docker-compose.yml
+    env_file: ../.env
+  # - path: homepage/docker-compose.yml # Dashboard for server home page
+
+  # SECURITY
+  - path: authelia/docker-compose.yml
+    env_file: ../.env
+  # - path: crowdsec/docker-compose.yml # IP Banning + Traffic Monitoring
+
+  # # MAINTENANCE
+  # - diun/docker-compose.yml # Docker Image Update Notifier
+  # - portainer/docker-compose.yml # Container management
+  # - watchtower/docker-compose.yml # Container auto-updator
