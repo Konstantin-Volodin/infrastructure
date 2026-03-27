@@ -38,17 +38,17 @@ sudo bash start-services.sh
 | Service               | URL                              | Status    |
 |-----------------------|----------------------------------|-----------|
 | Pi-hole               | `https://dns.voxlab.home/admin/` | Installed |
-| Caddy                 | —                                | Installed |
+| Caddy                 | -                                | Installed |
 | Authelia              | `https://auth.voxlab.home`       | Installed |
 | Immich                | `https://photos.voxlab.home`     | Installed |
 | Mealie                | `https://recipes.voxlab.home`    | Installed |
-| Homepage              | `https://apps.voxlab.home`       | Planned   |
-| Diun                  | —                                | Planned   |
-| Nextcloud             | —                                | Planned   |
-| Jellyfin              | —                                | Planned   |
-| Sonarr / Radarr       | —                                | Planned   |
-| Prowlarr              | —                                | Planned   |
-| qBittorrent + Gluetun | —                                | Planned   |
+| Homepage              | `https://apps.voxlab.home`       | Installed |
+| Jellyfin              | -                                | Planned   |
+| Sonarr / Radarr       | -                                | Planned   |
+| Prowlarr              | -                                | Planned   |
+| qBittorrent + Gluetun | -                                | Planned   |
+| Diun                  | -                                | Planned   |
+| Nextcloud             | -                                | Planned   |
 
 ### Architecture
 
@@ -61,7 +61,7 @@ sudo bash start-services.sh
 ## Key files
 
 | File                                | Purpose                                       |
-|------------------------------------|-----------------------------------------------|
+|-------------------------------------|-----------------------------------------------|
 | prepare-linux.sh                    | Host bootstrap                                |
 | start-services.sh                   | Secret generation + startup                   |
 | services/docker-compose.yml         | Top-level compose (includes all services)     |
