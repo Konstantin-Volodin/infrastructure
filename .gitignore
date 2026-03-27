@@ -7,6 +7,7 @@ data/
 services/authelia/config/oidc.pem
 services/immich/config/immich.json
 services/pihole/config/05-void-dns.conf
+internal-ca.crt
 
 # caddy auto-generated state
 services/caddy/data/
@@ -22,6 +23,7 @@ Thumbs.db
 *.swp
 
 # misc
+images/
 services/recipe-ocr/
 .claude
 CLAUDE.md
