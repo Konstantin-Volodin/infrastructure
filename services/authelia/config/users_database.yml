@@ -7,9 +7,9 @@
 
 # List of users
 users:
-  admin:
+  vox:
     disabled: false
-    displayname: 'admin'
+    displayname: 'vox'
     # password is generated in start-services.sh
     password:
     email: 'volodin.kostia@gmail.com'

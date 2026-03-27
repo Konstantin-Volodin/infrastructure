@@ -25,7 +25,7 @@
 | Pi-hole UI 	| `http://<host-ip>:8080/admin` 			|
 | Authelia 		| `https://auth.voxlab.home` 				|
 | Immich 		| `https://photos.voxlab.home` 				|
-| Mealie 		| `https://recipes.voxlab.home` 				|
+| Mealie 		| `https://recipes.voxlab.home` 			|
 
 ## overview
 
@@ -148,6 +148,15 @@ At a high level it handles:
 
 This script is intended for initial host preparation before the service stack is layered on top.
 
+
+## Post-setup: Authelia first login
+
+To setup Authelia for the first time, use the one-time password.
+
+To access the one-time password generated, run:
+```bash
+sudo docker exec authelia cat /data/notification.txt
+```
 
 ## Post-setup: Tailscale DNS
 
