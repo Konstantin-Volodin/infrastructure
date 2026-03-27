@@ -12,7 +12,7 @@ users:
     displayname: 'admin'
     # password is generated in start-services.sh
     password:
-    email: 'authelia@authelia.com'
+    email: 'volodin.kostia@gmail.com'
     groups:
       - 'admins'
       - 'dev'
