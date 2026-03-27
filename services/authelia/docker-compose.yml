@@ -19,6 +19,7 @@ services:
       - AUTHELIA_STORAGE_ENCRYPTION_KEY=${AUTHELIA_STORAGE_ENCRYPTION_KEY}
     volumes:
       - ./config:/config
+      - ./secrets:/config/secrets
       - ./logs:/data/log
     env_file: ../../.env
     networks:
