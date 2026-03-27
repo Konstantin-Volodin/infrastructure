@@ -75,6 +75,32 @@ ok "immich config generated."
 
 
 
+# ===== generate combined CA bundle (system CAs + caddy internal CA) =====
+if [ -f services/caddy/combined-ca.crt ]; then
+    ok "combined CA bundle already exists."
+else
+    info "generating caddy internal CA cert..."
+    mkdir -p services/caddy/data services/caddy/config
+    # run caddy with a minimal tls internal config to trigger CA generation
+    docker run -d --rm \
+        -v "${PWD}/services/caddy/data:/data" \
+        --name "temp-caddy" caddy:latest \
+        sh -c 'echo "localhost { tls internal }" | caddy run --adapter caddyfile --config -'
+    # wait for caddy to generate its internal CA
+    for i in $(seq 1 15); do
+        [ -f services/caddy/data/caddy/pki/authorities/local/root.crt ] && break
+        sleep 1
+    done
+    docker stop temp-caddy 2>/dev/null || true
+
+    if [ -f services/caddy/data/caddy/pki/authorities/local/root.crt ]; then
+        cat /etc/ssl/certs/ca-certificates.crt services/caddy/data/caddy/pki/authorities/local/root.crt > services/caddy/combined-ca.crt
+        ok "combined CA bundle created."
+    else
+        die "failed to generate caddy root CA — cannot create combined CA bundle."
+    fi
+fi
+
 # ===== create docker network =====
 docker network inspect proxy >/dev/null 2>&1 || docker network create proxy
 ok "proxy network ready."
@@ -92,23 +118,6 @@ set -a; source ../.env; set +a
 docker compose down
 docker compose up -d
 ok "all services up."
-
-# ===== generate combined CA bundle (system CAs + caddy internal CA) =====
-info "building combined CA bundle with caddy's internal CA..."
-# wait for caddy to generate its internal CA
-for i in $(seq 1 15); do
-    [ -f caddy/data/caddy/pki/authorities/local/root.crt ] && break
-    sleep 1
-done
-if [ -f caddy/data/caddy/pki/authorities/local/root.crt ]; then
-    cat /etc/ssl/certs/ca-certificates.crt caddy/data/caddy/pki/authorities/local/root.crt > caddy/combined-ca.crt
-    ok "combined CA bundle created."
-    # restart services that depend on the CA bundle
-    docker compose restart immich-server mealie
-    ok "restarted services with new CA bundle."
-else
-    warn "caddy root CA not found — OIDC may not work until next restart."
-fi
 
 # ===== configure pihole wildcard DNS =====
 info "waiting for pihole to be ready..."
