@@ -19,71 +19,71 @@ sudo bash start-services.sh
 
 ### Post-setup
 
-**Tailscale DNS** — route `*.voxlab.home` queries to Pi-hole:
+**Tailscale DNS** - route `*.voxlab.home` queries to Pi-hole:
 1. Get void's Tailscale IP: `tailscale ip -4`
 2. Tailscale admin → DNS → Nameservers → add custom nameserver with the `100.x.x.x` address
 3. Restrict to domain: `voxlab.home`
 
-**Authelia first login** — get the one-time password:
-```bash
-sudo docker exec authelia cat /data/notification.txt
-```
+**Authelia first login** - get the one-time password: `sudo docker exec authelia cat /data/notification.txt`
+
+**Pihole login** - `sudo docker logs pihole | grep "password"`
 
 ## Services
 
-| Service | URL | Status |
-|---------|-----|--------|
-| Pi-hole | `http://<host-ip>:8080/admin` | Installed |
-| Caddy | — | Installed |
-| Authelia | `https://auth.voxlab.home` | Installed |
-| Immich | `https://photos.voxlab.home` | Installed |
-| Mealie | `https://recipes.voxlab.home` | Installed |
-| Nextcloud | — | Planned |
-| Jellyfin | — | Planned |
-| Sonarr / Radarr | — | Planned |
-| Prowlarr | — | Planned |
-| qBittorrent + Gluetun | — | Planned |
+| Service               | URL                              | Status    |
+|-----------------------|----------------------------------|-----------|
+| Pi-hole               | `http://<host-ip>:8080/admin`    | Installed |
+| Caddy                 | —                                | Installed |
+| Authelia              | `https://auth.voxlab.home`       | Installed |
+| Immich                | `https://photos.voxlab.home`     | Installed |
+| Mealie                | `https://recipes.voxlab.home`    | Installed |
+| Nextcloud             | —                                | Planned   |
+| Jellyfin              | —                                | Planned   |
+| Sonarr / Radarr       | —                                | Planned   |
+| Prowlarr              | —                                | Planned   |
+| qBittorrent + Gluetun | —                                | Planned   |
 
 ### Architecture
 
-- **Reverse proxy:** Caddy terminates TLS (internal CA), routes by hostname
-- **Auth:** Authelia provides forward auth for all routes + OIDC for Immich and Mealie
-- **DNS:** Pi-hole serves wildcard `*.voxlab.home` pointing to the host IP
-- **Remote access:** Tailscale VPN; services reachable as long as the client uses Pi-hole for DNS
-- **Containers:** Docker Compose per service, shared `proxy` network
+- Reverse proxy: Caddy terminates TLS (internal CA), routes by hostname
+- Auth: Authelia forward auth for all routes + OIDC for Immich and Mealie
+- DNS: Pi-hole serves wildcard `*.voxlab.home` to host IP
+- Remote access: Tailscale VPN + Pi-hole DNS
+- Containers: Docker Compose per service with shared `proxy` network
 
-### Key files
+## Key files
 
-| File | Purpose |
-|------|---------|
-| [prepare-linux.sh](prepare-linux.sh) | Host bootstrap |
-| [start-services.sh](start-services.sh) | Secret generation + service startup |
-| [services/docker-compose.yml](services/docker-compose.yml) | Top-level compose (includes all services) |
-| [services/caddy/Caddyfile](services/caddy/Caddyfile) | Routing + forward auth |
+| File                                | Purpose                                       |
+|------------------------------------|-----------------------------------------------|
+| prepare-linux.sh                    | Host bootstrap                                |
+| start-services.sh                   | Secret generation + startup                   |
+| services/docker-compose.yml         | Top-level compose (includes all services)     |
+| services/caddy/Caddyfile            | Routing + forward auth                        |
 
 ## Hardware
 
-### `void` — homelab node
+### void (homelab node)
+- hardware: Lenovo ThinkCentre M710q
+- CPU: Intel Core i5 7500T
+- RAM: 8 GB (max 32 GB)
+- storage: 256 GB NVMe (SATA expansion available)
+- OS: Ubuntu Server 24.04 LTS
 
-| | |
-|---|---|
-| Hardware | Lenovo ThinkCentre M710q |
-| CPU | Intel Core i5-7500T |
-| RAM | 8 GB (up to 32 GB) |
-| Storage | 256 GB NVMe + optional SATA slot |
-| OS | Ubuntu Server 24.04 LTS |
-| Network | LAN static IPs, Tailscale for remote access |
+### abyss (media node)
+- hardware: planned NAS build
 
-### `core` — workstation (not part of the lab)
+### core (workstation) (to convert to 'synapse' node)
+- hardware: Custom desktop build
+- CPU: AMD Ryzen 5 5600X
+- RAM: 32 GB
+- storage: 1 TB NVMe + 2 TB SATA (4xSATA + 2x3.5" bays total)
+- GPU: NVIDIA RTX 3060 Ti
+- OS: Windows 11
 
-| | |
-|---|---|
-| CPU | AMD Ryzen 5 5600X |
-| GPU | NVIDIA RTX 3060 Ti |
-| RAM | 32 GB |
-| Storage | 1 TB NVMe + 2 TB SATA |
+### core
+- hardware: planned laptop upgrade to ssh into stuff on the go
 
 ## Constraints
 
-- **RAM:** 8 GB covers the current stack; media services may need 16 GB+
-- **Storage:** 256 GB is tight for a media library; SATA expansion available
+- RAM: 8 GB for current stack; media services may need 16 GB+
+- Storage: 256 GB tight for media, SATA expansion available
