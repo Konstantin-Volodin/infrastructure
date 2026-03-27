@@ -25,12 +25,22 @@ auth.{$DOMAIN} {
 
 photos.{$DOMAIN} {
 	tls internal
-	import authelia
 	reverse_proxy immich-server:2283
 }
 
 recipes.{$DOMAIN} {
 	tls internal
-	import authelia
 	reverse_proxy mealie:9000
+}
+
+dns.{$DOMAIN} {
+	tls internal
+	import authelia
+	reverse_proxy pihole:80
+}
+
+apps.{$DOMAIN} {
+	tls internal
+	import authelia
+	reverse_proxy homepage:3000
 }
