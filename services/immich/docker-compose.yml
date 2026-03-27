@@ -6,9 +6,10 @@ services:
       - ${IMMICH_UPLOADS}:/data
       - /etc/localtime:/etc/localtime:ro
       - ./config/immich.json:/config/immich.json:ro
+      - ../caddy/combined-ca.crt:/etc/ssl/certs/combined-ca.crt:ro
     environment:
       IMMICH_CONFIG_FILE: /config/immich.json
-      NODE_TLS_REJECT_UNAUTHORIZED: '0'
+      NODE_EXTRA_CA_CERTS: /etc/ssl/certs/combined-ca.crt
     env_file: ../../.env
     extra_hosts:
       - "auth.${DOMAIN}:${HOST_IP}"

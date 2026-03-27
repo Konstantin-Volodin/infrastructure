@@ -93,6 +93,23 @@ docker compose down
 docker compose up -d
 ok "all services up."
 
+# ===== generate combined CA bundle (system CAs + caddy internal CA) =====
+info "building combined CA bundle with caddy's internal CA..."
+# wait for caddy to generate its internal CA
+for i in $(seq 1 15); do
+    [ -f caddy/data/caddy/pki/authorities/local/root.crt ] && break
+    sleep 1
+done
+if [ -f caddy/data/caddy/pki/authorities/local/root.crt ]; then
+    cat /etc/ssl/certs/ca-certificates.crt caddy/data/caddy/pki/authorities/local/root.crt > caddy/combined-ca.crt
+    ok "combined CA bundle created."
+    # restart services that depend on the CA bundle
+    docker compose restart immich-server mealie
+    ok "restarted services with new CA bundle."
+else
+    warn "caddy root CA not found — OIDC may not work until next restart."
+fi
+
 # ===== configure pihole wildcard DNS =====
 info "waiting for pihole to be ready..."
 until docker exec pihole pihole status 2>/dev/null | grep -q "blocking is enabled"; do sleep 2; done

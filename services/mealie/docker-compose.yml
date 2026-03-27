@@ -9,6 +9,7 @@ services:
           memory: 1000M
     volumes:
       - ${MEALIE_DATA}:/app/data/
+      - ../caddy/combined-ca.crt:/etc/ssl/certs/combined-ca.crt:ro
     env_file: ../../.env
     extra_hosts:
       - "auth.${DOMAIN}:${HOST_IP}"
@@ -23,10 +24,11 @@ services:
       THEME_DARK_PRIMARY: '#6366F1'
       THEME_DARK_ACCENT: '#6366F1'
       THEME_DARK_SECONDARY: '#1E293B'
+      SSL_CERT_FILE: /etc/ssl/certs/combined-ca.crt
       BASE_URL: https://recipes.${DOMAIN}
       OIDC_AUTH_ENABLED: "true"
       OIDC_SIGNUP_ENABLED: "true"
-      OIDC_CONFIGURATION_URL: http://authelia:9091/.well-known/openid-configuration
+      OIDC_CONFIGURATION_URL: https://auth.${DOMAIN}/.well-known/openid-configuration
       OIDC_CLIENT_ID: mealie
       OIDC_CLIENT_SECRET: ${MEALIE_OIDC_SECRET}
       OIDC_PROVIDER_NAME: Authelia
