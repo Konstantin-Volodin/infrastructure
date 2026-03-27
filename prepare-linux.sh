@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# setup.sh — provision void (Ubuntu Server 24.04 LTS)
+# setup.sh - provision void (Ubuntu Server 24.04 LTS)
 #
 # usage:
 #   scp services/setup.sh user@host:~/setup.sh
@@ -9,13 +9,13 @@
 # what this does:
 #   1.  system update
 #   2.  disable sleep & suspend
-#   3.  SSH hardening — pubkey only, no root login
-#   4.  UFW firewall — deny all except SSH, DNS, HTTP, HTTPS
-#   5.  fail2ban — ban IPs after 5 failed SSH attempts
-#   6.  network — static IPs via Netplan
-#   7.  docker + git — install
-#   8.  docker network — create shared 'net' for inter-container routing
-#   9.  pihole — free port 53 (disable systemd-resolved stub listener)
+#   3.  SSH hardening - pubkey only, no root login
+#   4.  UFW firewall - deny all except SSH, DNS, HTTP, HTTPS
+#   5.  fail2ban - ban IPs after 5 failed SSH attempts
+#   6.  network - static IPs via Netplan
+#   7.  docker + git - install
+#   8.  docker network - create shared 'net' for inter-container routing
+#   9.  pihole - free port 53 (disable systemd-resolved stub listener)
 # =============================================================================
 
 info() { echo "  [·] $*"; }
@@ -123,7 +123,7 @@ apt-get install -y -q docker.io docker-compose-v2 git
 systemctl enable docker
 ok "docker $(docker --version | cut -d' ' -f3 | tr -d ',') and git installed."
 
-## ===== pihole — free port 53 ====================
+## ===== pihole - free port 53 ====================
 info "freeing port 53 for Pi-hole..."
 sed -i 's/#DNSStubListener=yes/DNSStubListener=no/' /etc/systemd/resolved.conf
 ok "systemd-resolved stub listener disabled."
