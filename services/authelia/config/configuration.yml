@@ -67,3 +67,31 @@ storage:
 notifier:
   filesystem:
     filename: '/data/notification.txt'
+
+identity_providers:
+  oidc:
+    hmac_secret: '{{ env "AUTHELIA_OIDC_HMAC_SECRET" }}'
+    jwks:
+      - key: {{ secret "/config/secrets/oidc.jwks.key" | mindent 10 "|" | msquote }}
+    clients:
+      - client_id: 'immich'
+        client_name: 'Immich'
+        client_secret: '{{ env "IMMICH_OIDC_SECRET" }}'
+        redirect_uris:
+          - 'https://photos.{{ env "DOMAIN" }}/auth/login'
+        scopes:
+          - 'openid'
+          - 'email'
+          - 'profile'
+        userinfo_signed_response_alg: 'none'
+
+      - client_id: 'mealie'
+        client_name: 'Mealie'
+        client_secret: '{{ env "MEALIE_OIDC_SECRET" }}'
+        redirect_uris:
+          - 'https://recipes.{{ env "DOMAIN" }}/login'
+        scopes:
+          - 'openid'
+          - 'email'
+          - 'profile'
+        userinfo_signed_response_alg: 'none'
