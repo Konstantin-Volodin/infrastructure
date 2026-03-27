@@ -23,6 +23,11 @@ if [ -f .env ]; then
 else
     cp .env.example .env
 
+    # detect host IP
+    HOST_IP=$(hostname -I | awk '{print $1}')
+    sed -i "s/^HOST_IP=.*/HOST_IP=${HOST_IP}/" .env
+    ok "detected host IP: ${HOST_IP}"
+
     # immich database password
     echo "DB_PASSWORD=$(openssl rand -hex 128 | tr -d '\n')" >> .env
 

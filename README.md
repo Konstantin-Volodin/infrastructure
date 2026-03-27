@@ -149,6 +149,18 @@ At a high level it handles:
 This script is intended for initial host preparation before the service stack is layered on top.
 
 
+## Post-setup: Tailscale DNS
+
+After `start-services.sh` completes, configure Tailscale to use Pi-hole for DNS so all devices on the tailnet can resolve `*.voxlab.home`:
+
+1. Get void's Tailscale IP: `tailscale ip -4`
+2. Go to **Tailscale admin console → DNS → Nameservers**
+3. Add a **custom nameserver** with void's Tailscale IP (the `100.x.x.x` address)
+4. Check **"Restrict to domain"** and enter `voxlab.home`
+
+This routes only `*.voxlab.home` queries to Pi-hole. All other DNS works normally.
+
+
 ## Networking notes
 
 - **LAN setup:** xxx.xxx.x.100 for void:cable and xxx.xxx.x.101 for void:wifi.
