@@ -90,7 +90,7 @@ ok "all services up."
 
 # ===== configure pihole wildcard DNS =====
 info "waiting for pihole to be ready..."
-until docker exec pihole pihole status 2>/dev/null | grep -q "FTL is listening"; do sleep 2; done
+until docker exec pihole pihole status 2>/dev/null | grep -q "blocking is enabled"; do sleep 2; done
 ok "pihole is ready."
 
 info "configuring pihole wildcard DNS for *.${DOMAIN}..."
