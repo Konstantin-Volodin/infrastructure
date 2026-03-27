@@ -1,0 +1,34 @@
+- Apps:
+    - Immich:
+        icon: immich
+        href: https://photos.{{HOMEPAGE_VAR_DOMAIN}}
+        description: Photos
+        server: my-docker
+        container: immich-server
+    - Mealie:
+        icon: mealie
+        href: https://recipes.{{HOMEPAGE_VAR_DOMAIN}}
+        description: Recipes
+        server: my-docker
+        container: mealie
+
+- Core:
+    - Pi-hole:
+        icon: pi-hole
+        href: https://dns.{{HOMEPAGE_VAR_DOMAIN}}
+        description: DNS
+        server: my-docker
+        container: pihole
+    - Caddy:
+        icon: caddy
+        description: Reverse proxy
+        server: my-docker
+        container: caddy
+
+- Security:
+    - Authelia:
+        icon: authelia
+        href: https://auth.{{HOMEPAGE_VAR_DOMAIN}}
+        description: SSO
+        server: my-docker
+        container: authelia

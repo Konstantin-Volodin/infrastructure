@@ -22,7 +22,8 @@ include:
     env_file: ../.env
   - path: pihole/docker-compose.yml
     env_file: ../.env
-  # - path: homepage/docker-compose.yml # Dashboard for server home page
+  - path: homepage/docker-compose.yml
+    env_file: ../.env
 
   # SECURITY
   - path: authelia/docker-compose.yml

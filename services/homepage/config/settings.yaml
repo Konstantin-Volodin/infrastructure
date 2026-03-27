@@ -1,0 +1,14 @@
+title: void
+theme: dark
+color: slate
+
+layout:
+  Apps:
+    style: row
+    columns: 2
+  Core:
+    style: row
+    columns: 2
+  Security:
+    style: row
+    columns: 1

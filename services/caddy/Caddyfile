@@ -34,3 +34,15 @@ recipes.{$DOMAIN} {
 	import authelia
 	reverse_proxy mealie:9000
 }
+
+dns.{$DOMAIN} {
+	tls internal
+	import authelia
+	reverse_proxy pihole:80
+}
+
+dash.{$DOMAIN} {
+	tls internal
+	import authelia
+	reverse_proxy homepage:3000
+}
