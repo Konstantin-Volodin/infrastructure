@@ -11,7 +11,7 @@ services:
     environment:
       TZ: ${TIMEZONE}
       FTLCONF_dns_listeningMode: 'ALL'
-      FTLCONF_dns_dnsmasq_lines: 'address=/.${DOMAIN}/${HOST_IP}'
+      FTLCONF_misc_dnsmasq_lines: '["address=/.${DOMAIN}/${HOST_IP}"]'
     volumes:
       - './etc-pihole:/etc/pihole'
     cap_add:
