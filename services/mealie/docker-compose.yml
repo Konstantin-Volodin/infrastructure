@@ -24,9 +24,11 @@ services:
       THEME_DARK_ACCENT: '#6366F1'
       THEME_DARK_SECONDARY: '#1E293B'
       BASE_URL: https://recipes.${DOMAIN}
+      SSL_CERT_FILE: ''
+      REQUESTS_CA_BUNDLE: ''
       OIDC_AUTH_ENABLED: "true"
       OIDC_SIGNUP_ENABLED: "true"
-      OIDC_CONFIGURATION_URL: http://authelia:9091/.well-known/openid-configuration
+      OIDC_CONFIGURATION_URL: https://auth.${DOMAIN}/.well-known/openid-configuration
       OIDC_CLIENT_ID: mealie
       OIDC_CLIENT_SECRET: ${MEALIE_OIDC_SECRET}
       OIDC_PROVIDER_NAME: Authelia

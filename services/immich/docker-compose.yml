@@ -8,6 +8,7 @@ services:
       - ./config/immich.json:/config/immich.json:ro
     environment:
       IMMICH_CONFIG_FILE: /config/immich.json
+      NODE_TLS_REJECT_UNAUTHORIZED: '0'
     env_file: ../../.env
     extra_hosts:
       - "auth.${DOMAIN}:${HOST_IP}"
