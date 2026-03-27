@@ -79,26 +79,14 @@ ok "immich config generated."
 if [ -f services/caddy/combined-ca.crt ]; then
     ok "combined CA bundle already exists."
 else
-    info "generating caddy internal CA cert..."
-    mkdir -p services/caddy/data services/caddy/config
-    # run caddy with a minimal tls internal config to trigger CA generation
-    docker run -d --rm \
-        -v "${PWD}/services/caddy/data:/data" \
-        --name "temp-caddy" caddy:latest \
-        sh -c 'echo "localhost { tls internal }" | caddy run --adapter caddyfile --config -'
-    # wait for caddy to generate its internal CA
-    for i in $(seq 1 15); do
-        [ -f services/caddy/data/caddy/pki/authorities/local/root.crt ] && break
-        sleep 1
-    done
-    docker stop temp-caddy 2>/dev/null || true
-
-    if [ -f services/caddy/data/caddy/pki/authorities/local/root.crt ]; then
-        cat /etc/ssl/certs/ca-certificates.crt services/caddy/data/caddy/pki/authorities/local/root.crt > services/caddy/combined-ca.crt
-        ok "combined CA bundle created."
-    else
-        die "failed to generate caddy root CA — cannot create combined CA bundle."
-    fi
+    info "generating internal CA cert..."
+    mkdir -p services/caddy/pki
+    openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes \
+        -keyout services/caddy/pki/internal-ca.key \
+        -out services/caddy/pki/internal-ca.crt \
+        -subj "/CN=Void Internal CA"
+    cat /etc/ssl/certs/ca-certificates.crt services/caddy/pki/internal-ca.crt > services/caddy/combined-ca.crt
+    ok "combined CA bundle created."
 fi
 
 # ===== create docker network =====

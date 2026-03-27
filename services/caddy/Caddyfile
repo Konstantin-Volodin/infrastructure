@@ -1,3 +1,15 @@
+# Use our own internal CA for TLS
+{
+	pki {
+		ca local {
+			root {
+				cert /pki/internal-ca.crt
+				key  /pki/internal-ca.key
+			}
+		}
+	}
+}
+
 # Authelia forward auth snippet
 (authelia) {
 	forward_auth authelia:9091 {

@@ -10,6 +10,7 @@ services:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - ./data:/data
       - ./config:/config
+      - ./pki:/pki:ro
     env_file: ../../.env
     networks:
       - proxy
