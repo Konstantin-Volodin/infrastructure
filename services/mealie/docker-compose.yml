@@ -26,7 +26,7 @@ services:
       BASE_URL: https://recipes.${DOMAIN}
       OIDC_AUTH_ENABLED: "true"
       OIDC_SIGNUP_ENABLED: "true"
-      OIDC_CONFIGURATION_URL: https://auth.${DOMAIN}/.well-known/openid-configuration
+      OIDC_CONFIGURATION_URL: http://authelia:9091/.well-known/openid-configuration
       OIDC_CLIENT_ID: mealie
       OIDC_CLIENT_SECRET: ${MEALIE_OIDC_SECRET}
       OIDC_PROVIDER_NAME: Authelia
