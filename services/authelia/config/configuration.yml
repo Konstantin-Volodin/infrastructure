@@ -81,7 +81,7 @@ identity_providers:
         consent_mode: 'implicit'
         redirect_uris:
           - 'https://photos.{{ env "DOMAIN" }}/auth/login'
-          - 'app.immich:/'
+          - 'app.immich:///oauth-callback'
         scopes:
           - 'openid'
           - 'email'
