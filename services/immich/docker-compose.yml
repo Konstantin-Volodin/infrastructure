@@ -9,6 +9,8 @@ services:
     environment:
       IMMICH_CONFIG_FILE: /config/immich.json
     env_file: ../../.env
+    extra_hosts:
+      - "auth.${DOMAIN}:${HOST_IP}"
     depends_on:
       - redis
       - database

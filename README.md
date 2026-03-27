@@ -113,12 +113,12 @@
 | 1     | Authelia               | SSO / authentication   | Installed  |
 | 1     | Immich                 | Photo + video backup   | Installed  |
 | 1     | Mealie                 | Recipe manager         | Installed  |
-| 2     | Nextcloud              | Files, docs, calendar  | Future     |
+| 2     | Book management        | TBD                    | Future     |
 | 2     | Jellyfin               | Media server           | Future     |
 | 2     | Sonarr / Radarr        | Media automation       | Future     |
 | 2     | Prowlarr               | Indexer management     | Future     |
 | 2     | qBittorrent + Gluetun  | Torrenting over VPN    | Future     |
-| 2     | Book management        | TBD                    | Future     |
+| 2     | Nextcloud              | Files, docs, calendar  | Future     |
 
 
 ## Important files:
@@ -132,6 +132,8 @@
 
 
 ## bootstrapping `void`
+
+git clone git@github.com:Konstantin-Volodin/infrastructure.git
 
 The base host bootstrap script is [prepare-linux.sh](prepare-linux.sh).
 
@@ -148,18 +150,10 @@ At a high level it handles:
 
 This script is intended for initial host preparation before the service stack is layered on top.
 
-
-## Post-setup: Authelia first login
-
-To setup Authelia for the first time, use the one-time password.
-
-To access the one-time password generated, run:
-```bash
-sudo docker exec authelia cat /data/notification.txt
-```
+## Starting Services
+run `sudo bash start-services.sh` in root of this git repo
 
 ## Post-setup: Tailscale DNS
-
 After `start-services.sh` completes, configure Tailscale to use Pi-hole for DNS so all devices on the tailnet can resolve `*.voxlab.home`:
 
 1. Get void's Tailscale IP: `tailscale ip -4`
@@ -168,6 +162,15 @@ After `start-services.sh` completes, configure Tailscale to use Pi-hole for DNS 
 4. Check **"Restrict to domain"** and enter `voxlab.home`
 
 This routes only `*.voxlab.home` queries to Pi-hole. All other DNS works normally.
+
+## Post-setup: Authelia first login
+To setup Authelia for the first time, use the one-time password.
+
+To access the one-time password generated, run:
+```bash
+sudo docker exec authelia cat /data/notification.txt
+```
+
 
 
 ## Networking notes

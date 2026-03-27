@@ -10,6 +10,8 @@ services:
     volumes:
       - ${MEALIE_DATA}:/app/data/
     env_file: ../../.env
+    extra_hosts:
+      - "auth.${DOMAIN}:${HOST_IP}"
     environment:
       ALLOW_SIGNUP: "false"
       PUID: 1000
