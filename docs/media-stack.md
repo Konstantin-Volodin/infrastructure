@@ -11,14 +11,11 @@ Shared services that support the media stack.
 - Gluetun (VPN container)
 
 ### VPN setup
-Gluetun handles the connection. Configure via environment variables in the Gluetun container. \
-Need a VPN provider that supports port forwarding (for seeding). Options:
-- **Mullvad** - privacy-focused, anonymous signup, accepts crypto
-- **Proton VPN** - bundled with Proton Mail, port forwarding on paid plans
-- **AirVPN** - full port forwarding, good for torrenting
+Gluetun handles the connection via ProtonVPN (OpenVPN). \
+Get your OpenVPN credentials from https://account.protonvpn.com/account#openvpn and set `PROTONVPN_OPENVPN_USER` / `PROTONVPN_OPENVPN_PASSWORD` in `.env`.
 
 ### Setup order
-1. Deploy Gluetun (with VPN credentials)
+1. Deploy Gluetun (with ProtonVPN OpenVPN credentials in `.env`)
 2. Deploy qBittorrent (attached to Gluetun network)
 3. Deploy Prowlarr and add indexers
 
