@@ -27,6 +27,6 @@ services:
     volumes:
       - ${CALIBREWEB_CONFIG}:/config
       - ${BOOKS_PATH}:/calibre-library
-      - ${BOOKS_INGEST}:/cwa-book-ingest  
+      - ${BOOKS_INGEST}:/books-ingest
     networks:
       - proxy
