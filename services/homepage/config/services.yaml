@@ -11,6 +11,12 @@
         description: Recipes
         server: my-docker
         container: mealie
+    - Calibre-Web:
+        icon: calibre-web
+        href: https://calibre.{{HOMEPAGE_VAR_DOMAIN}}
+        description: Book library
+        server: my-docker
+        container: calibre-web
 
 - Media Automation:
     - qBittorrent:
@@ -25,6 +31,13 @@
         description: Indexer manager
         server: my-docker
         container: prowlarr
+    - LazyLibrarian:
+        icon: lazylibrarian
+        href: https://lazylibrarian.{{HOMEPAGE_VAR_DOMAIN}}
+        description: Book automation
+        server: my-docker
+        container: lazylibrarian
+
     - Gluetun:
         icon: gluetun
         description: VPN tunnel

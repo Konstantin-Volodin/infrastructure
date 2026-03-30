@@ -1,0 +1,37 @@
+services:
+  lazylibrarian:
+    container_name: lazylibrarian
+    image: lscr.io/linuxserver/lazylibrarian:latest
+    restart: always
+    env_file: ../../.env
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: ${TIMEZONE}
+      UMASK: 002
+    volumes:
+      - ${LAZYLIBRARIAN_CONFIG:-./config}:/config
+      - ${BOOKS_PATH:-./books}:/books
+      - ${DOWNLOADS_PATH:-./downloads}:/downloads
+    networks:
+      - proxy
+
+  calibre-web:
+    container_name: calibre-web
+    image: lscr.io/linuxserver/calibre-web:latest
+    restart: always
+    env_file: ../../.env
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: ${TIMEZONE}
+      OAUTHLIB_INSECURE_TRANSPORT: 1
+    volumes:
+      - ${CALIBREWEB_CONFIG:-./config}:/config
+      - ${BOOKS_PATH:-./books}:/books
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
