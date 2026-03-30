@@ -16,6 +16,7 @@ services:
       OPENVPN_PASSWORD: ${PROTONVPN_OPENVPN_PASSWORD}
       SERVER_COUNTRIES: ${VPN_SERVER_COUNTRIES}
       FREE_ONLY: ${PROTONVPN_FREE_ONLY:-off}
+      VPN_PORT_FORWARDING: on
     networks:
       - proxy
 

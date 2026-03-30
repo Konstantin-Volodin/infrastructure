@@ -115,11 +115,29 @@ else
     ok "combined CA bundle created."
 fi
 
+# ===== create data directories with correct ownership =====
+info "ensuring data directories exist with correct ownership..."
+REAL_USER="${SUDO_USER:-$USER}"
+REAL_UID=$(id -u "$REAL_USER")
+REAL_GID=$(id -g "$REAL_USER")
+
+dirs=(
+    services/books/data/books
+    services/books/data/lazylibrarian
+    services/books/data/calibre-web
+    services/media-automation/data/downloads
+    services/media-automation/data/qbittorrent
+    services/media-automation/data/prowlarr
+)
+for dir in "${dirs[@]}"; do
+    mkdir -p "$dir"
+    chown -R "$REAL_UID:$REAL_GID" "$dir"
+done
+ok "data directories ready."
+
 # ===== create docker network =====
 docker network inspect proxy >/dev/null 2>&1 || docker network create proxy
 ok "proxy network ready."
-
-REAL_USER="${SUDO_USER:-$USER}"
 
 # ===== start all services =====
 info "starting all services..."

@@ -22,6 +22,7 @@ Get your OpenVPN credentials from https://account.protonvpn.com/account#openvpn 
 ### Post-deploy
 - **Verify VPN**: `docker exec gluetun wget -qO- ifconfig.me` — should return a Canadian IP
 - **qBittorrent login**: `sudo docker logs qbittorrent | grep "password"` for the generated password (user: `admin`)
+- **qBittorrent auth bypass**: Settings → Web UI → Authentication → enable "Bypass authentication for clients in whitelisted IP subnets" → add `172.0.0.0/8` (allows LazyLibrarian and other Docker containers to connect without credentials)
 - **Add indexers**: Prowlarr → Indexers → Add. Recommended public indexers:
   - The Pirate Bay (general)
   - LimeTorrents (general)
@@ -41,8 +42,12 @@ Automated ebook management with Calibre-Web and LazyLibrarian.
 2. Deploy Calibre-Web, point to same Calibre library path
 
 ### Post-deploy
-- **LazyLibrarian**: connect to Prowlarr as indexer source + qBittorrent as download client
-- **Calibre-Web**: point library path to `/books` (shared with LazyLibrarian)
+- **qBittorrent in LazyLibrarian**: Settings → Downloaders → qBittorrent (host: `gluetun`, port: `8080`)
+- **Prowlarr → LazyLibrarian sync**: Prowlarr → Settings → Apps → Add → LazyLibrarian (Prowlarr server: `http://prowlarr:9696`, LazyLibrarian server: `http://lazylibrarian:5299`, API key: LazyLibrarian full access key from Settings → Interface)
+- **Calibre-Web**: login with `admin` / `admin123`, then:
+  - Point library path to `/books`
+  - Admin → Basic Configuration → Enable **Allow Reverse Proxy Authentication** → set header to `Remote-User`
+  - Create a user matching your Authelia username
 
 
 ## Phase 3: TV & Movies
