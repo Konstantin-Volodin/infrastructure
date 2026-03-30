@@ -1,67 +1,63 @@
 - Apps:
-    - Immich:
+    - Photos:
         icon: immich
         href: https://photos.{{HOMEPAGE_VAR_DOMAIN}}
-        description: Photos
+        subtitle: Immich
         server: my-docker
         container: immich-server
-    - Mealie:
+    - Recipes:
         icon: mealie
         href: https://recipes.{{HOMEPAGE_VAR_DOMAIN}}
-        description: Recipes
+        subtitle: Mealie
         server: my-docker
         container: mealie
-
-- Media Automation:
-    - qBittorrent:
-        icon: qbittorrent
-        href: https://downloads.{{HOMEPAGE_VAR_DOMAIN}}
-        description: Downloads
-        server: my-docker
-        container: qbittorrent
-    - Prowlarr:
-        icon: prowlarr
-        href: https://indexer.{{HOMEPAGE_VAR_DOMAIN}}
-        description: Indexer manager
-        server: my-docker
-        container: prowlarr
-    - Gluetun:
-        icon: gluetun
-        description: VPN tunnel
-        server: my-docker
-        container: gluetun
-
-- Books:
-    - LazyLibrarian:
-        icon: lazylibrarian
-        href: https://books.{{HOMEPAGE_VAR_DOMAIN}}
-        description: Book automation
-        server: my-docker
-        container: lazylibrarian
-    - Calibre-Web:
+    - Books:
         icon: calibre-web
         href: https://reader.{{HOMEPAGE_VAR_DOMAIN}}
-        description: Ebook reader
+        subtitle: Calibre
         server: my-docker
         container: calibre-web
 
 - Core:
-    - Pi-hole:
+    - DNS:
         icon: pi-hole
         href: https://dns.{{HOMEPAGE_VAR_DOMAIN}}/admin/
-        description: DNS
+        subtitle: Pi-hole
         server: my-docker
         container: pihole
-    - Caddy:
+    - Proxy:
         icon: caddy
-        description: Reverse proxy
+        subtitle: Caddy
         server: my-docker
         container: caddy
-
-- Security:
-    - Authelia:
+    - Authentication:
         icon: authelia
         href: https://auth.{{HOMEPAGE_VAR_DOMAIN}}
-        description: SSO
+        subtitle: Authelia
         server: my-docker
         container: authelia
+
+- Media Automation:
+    - Indexer:
+        icon: prowlarr
+        href: https://indexer.{{HOMEPAGE_VAR_DOMAIN}}
+        subtitle: Prowlarr
+        server: my-docker
+        container: prowlarr
+    - VPN:
+        icon: gluetun
+        subtitle: Gluetun
+        server: my-docker
+        container: gluetun
+    - Downloads:
+        icon: qbittorrent
+        href: https://downloads.{{HOMEPAGE_VAR_DOMAIN}}
+        subtitle: qBittorrent
+        server: my-docker
+        container: qbittorrent
+    - Book Management:
+        icon: lazylibrarian
+        href: https://books.{{HOMEPAGE_VAR_DOMAIN}}
+        subtitle: LazyLibrarian
+        server: my-docker
+        container: lazylibrarian
