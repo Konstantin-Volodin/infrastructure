@@ -1,34 +1,33 @@
 services:
-  lazylibrarian:
-    container_name: lazylibrarian
-    image: lscr.io/linuxserver/lazylibrarian:latest
+  shelfmark:
+    container_name: shelfmark
+    image: calibrain/shelfmark:latest
     restart: always
     env_file: ../../.env
     environment:
       PUID: 1000
       PGID: 1000
       TZ: ${TIMEZONE}
-      UMASK: 002
-      DOCKER_MODS: linuxserver/mods:universal-calibre
     volumes:
-      - ${LAZYLIBRARIAN_CONFIG}:/config
-      - ${BOOKS_PATH}:/books
-      - ${DOWNLOADS_PATH}:/downloads
+      - ${SHELFMARK_CONFIG}:/config
+      - ${BOOKS_PATH}:/library
+      - ${BOOKS_INGEST}:/watch
+    command: ["shelfmark", "watch", "--source", "/watch", "--destination", "/library", "--config", "/config/config.yml", "--remove"]
     networks:
       - proxy
 
-  calibre-web:
-    container_name: calibre-web
-    image: lscr.io/linuxserver/calibre-web:latest
+  calibre-web-automated:
+    container_name: calibre-web-automated
+    image: crocodilestick/calibre-web-automated:latest
     restart: always
     env_file: ../../.env
     environment:
       PUID: 1000
       PGID: 1000
       TZ: ${TIMEZONE}
-      OAUTHLIB_INSECURE_TRANSPORT: 1
     volumes:
       - ${CALIBREWEB_CONFIG}:/config
-      - ${BOOKS_PATH}:/books
+      - ${BOOKS_PATH}:/calibre-library
+      - ${BOOKS_INGEST}:/cwa-book-ingest
     networks:
       - proxy

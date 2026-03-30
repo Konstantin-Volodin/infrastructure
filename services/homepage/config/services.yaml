@@ -12,11 +12,11 @@
         server: my-docker
         container: mealie
     - Books:
-        icon: calibre-web
+        icon: calibre-web-automated
         href: https://reader.{{HOMEPAGE_VAR_DOMAIN}}
-        subtitle: Calibre
+        subtitle: calibre-web-automated
         server: my-docker
-        container: calibre-web
+        container: calibre-web-automated
 
 - Core:
     - DNS:
@@ -56,8 +56,8 @@
         server: my-docker
         container: qbittorrent
     - Book Management:
-        icon: lazylibrarian
+        icon: shelfmark
         href: https://books.{{HOMEPAGE_VAR_DOMAIN}}
-        subtitle: LazyLibrarian
+        subtitle: Shelfmark
         server: my-docker
-        container: lazylibrarian
+        container: shelfmark

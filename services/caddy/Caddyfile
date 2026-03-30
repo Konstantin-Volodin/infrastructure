@@ -60,11 +60,11 @@ indexer.{$DOMAIN} {
 books.{$DOMAIN} {
 	tls internal
 	import authelia
-	reverse_proxy lazylibrarian:5299
+	reverse_proxy shelfmark:8080
 }
 
 reader.{$DOMAIN} {
 	tls internal
 	import authelia
-	reverse_proxy calibre-web:8083
+	reverse_proxy calibre-web-automated:8083
 }

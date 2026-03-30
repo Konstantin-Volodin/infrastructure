@@ -33,7 +33,7 @@ fi
 
 # ===== resolve relative paths to absolute =====
 info "resolving storage paths..."
-for key in DOWNLOADS_PATH QBITTORRENT_CONFIG PROWLARR_CONFIG BOOKS_PATH LAZYLIBRARIAN_CONFIG CALIBREWEB_CONFIG IMMICH_UPLOADS IMMICH_DB_DATA MEALIE_DATA; do
+for key in DOWNLOADS_PATH QBITTORRENT_CONFIG PROWLARR_CONFIG BOOKS_PATH SHELFMARK_CONFIG CALIBREWEB_CONFIG IMMICH_UPLOADS IMMICH_DB_DATA MEALIE_DATA; do
     val=$(grep "^${key}=" .env | cut -d= -f2-)
     if [[ "$val" == ./* ]]; then
         abs="${PWD}/${val#./}"
@@ -137,7 +137,8 @@ dirs=(
     data/qbittorrent
     data/prowlarr
     data/books
-    data/lazylibrarian
+    data/books-ingest
+    data/shelfmark
     data/calibre-web
     data/immich-uploads
     data/immich-postgres
