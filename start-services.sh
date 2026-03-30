@@ -16,42 +16,60 @@ die()  { echo "  [✗] $*" >&2; exit 1; }
 set -euo pipefail
 [[ $EUID -ne 0 ]] && die "run as root: sudo bash start-services.sh"
 
-# ===== create .env file =====
-info "creating .env file with random secrets..."
+# ===== create or update .env file =====
 if [ -f .env ]; then
-    ok ".env file already exists."
+    info "syncing new variables from .env.example..."
+    while IFS= read -r line; do
+        key="${line%%=*}"
+        [[ -z "$key" || "$key" == \#* || "$key" == "$line" ]] && continue
+        grep -q "^${key}=" .env || echo "$line" >> .env
+    done < .env.example
+    ok ".env synced."
 else
+    info "creating .env from .env.example..."
     cp .env.example .env
-
-    # detect host IP
-    HOST_IP=$(hostname -I | awk '{print $1}')
-    sed -i "s/^HOST_IP=.*/HOST_IP=${HOST_IP}/" .env
-    ok "detected host IP: ${HOST_IP}"
-
-    # immich database password
-    echo "DB_PASSWORD=$(openssl rand -hex 128 | tr -d '\n')" >> .env
-
-    # authelia secrets
-    echo "AUTHELIA_JWT_PASSWORD=$(openssl rand -hex 128 | tr -d '\n')" >> .env
-    echo "AUTHELIA_SESSION_SECRET=$(openssl rand -hex 128 | tr -d '\n')" >> .env
-    echo "AUTHELIA_STORAGE_ENCRYPTION_KEY=$(openssl rand -hex 128 | tr -d '\n')" >> .env
-    echo "AUTHELIA_OIDC_HMAC_SECRET=$(openssl rand -hex 128 | tr -d '\n')" >> .env
-
-    # oidc client secrets (must match authelia identity provider config)
-    echo "IMMICH_OIDC_SECRET=$(openssl rand -hex 128 | tr -d '\n')" >> .env
-    echo "MEALIE_OIDC_SECRET=$(openssl rand -hex 128 | tr -d '\n')" >> .env
-
-    # protonvpn credentials (from account.protonvpn.com/account#openvpn)
-    info "enter ProtonVPN OpenVPN credentials (not your login password):"
-    read -rp "  OpenVPN username: " PROTON_USER
-    read -rsp "  OpenVPN password: " PROTON_PASS; echo
-    sed -i "s/^PROTONVPN_OPENVPN_USER=.*/PROTONVPN_OPENVPN_USER=${PROTON_USER}/" .env
-    sed -i "s/^PROTONVPN_OPENVPN_PASSWORD=.*/PROTONVPN_OPENVPN_PASSWORD=${PROTON_PASS}/" .env
-    ok "protonvpn credentials set."
-
-    # done
-    ok ".env file created."
+    ok ".env created."
 fi
+
+# ===== populate auto-generated secrets (only if missing) =====
+gen_secret() {
+    local key="$1"
+    if ! grep -q "^${key}=.\+" .env; then
+        sed -i "s/^${key}=.*/${key}=$(openssl rand -hex 128 | tr -d '\n')/" .env
+        ok "generated ${key}"
+    fi
+}
+
+# detect host IP
+HOST_IP=$(hostname -I | awk '{print $1}')
+sed -i "s/^HOST_IP=.*/HOST_IP=${HOST_IP}/" .env
+ok "detected host IP: ${HOST_IP}"
+
+gen_secret DB_PASSWORD
+gen_secret AUTHELIA_JWT_PASSWORD
+gen_secret AUTHELIA_SESSION_SECRET
+gen_secret AUTHELIA_STORAGE_ENCRYPTION_KEY
+gen_secret AUTHELIA_OIDC_HMAC_SECRET
+gen_secret IMMICH_OIDC_SECRET
+gen_secret MEALIE_OIDC_SECRET
+
+# ===== prompt for user-provided credentials (only if missing) =====
+prompt_credential() {
+    local key="$1" prompt="$2" secret="${3:-false}"
+    if ! grep -q "^${key}=.\+" .env; then
+        if [ "$secret" = true ]; then
+            read -rsp "  ${prompt}: " value; echo
+        else
+            read -rp "  ${prompt}: " value
+        fi
+        sed -i "s/^${key}=.*/${key}=${value}/" .env
+        ok "${key} set."
+    fi
+}
+
+info "checking user credentials..."
+prompt_credential PROTONVPN_OPENVPN_USER "ProtonVPN OpenVPN username (from account.protonvpn.com/account#openvpn)"
+prompt_credential PROTONVPN_OPENVPN_PASSWORD "ProtonVPN OpenVPN password" true
 
 # ===== generate authelia admin =====
 if [ -f services/authelia/secrets/oidc.jwks.key ]; then
