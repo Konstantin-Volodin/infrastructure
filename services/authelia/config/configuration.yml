@@ -41,7 +41,7 @@ access_control:
     - domain: 
       - '{{ env "DOMAIN"}}'
       - '*.{{ env "DOMAIN" }}'
-      policy: 'two_factor'
+      # policy: 'two_factor'
 
 session:
   name: 'authelia_session'
