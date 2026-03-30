@@ -11,7 +11,7 @@ services:
     volumes:
       - ${SHELFMARK_CONFIG}:/config
       - ${DOWNLOADS_PATH}:/downloads     # 
-      - ${BOOKS_INGEST}:/books          # 
+      - ${BOOKS_INGEST}:/books-ingest          # 
     networks:
       - proxy
 
