@@ -10,8 +10,8 @@ services:
       TZ: ${TIMEZONE}
     volumes:
       - ${SHELFMARK_CONFIG}:/config
-      - ${BOOKS_INGEST}:/downloads           # books should go here so calibrew can ingest them
-      - ${BOOKS_INGEST}:/books-ingest          # 
+      - ${BOOKS_INGEST}:/books-ingest        # 
+      - ${DOWNLOADS_PATH}:/downloads           #
     networks:
       - proxy
 
