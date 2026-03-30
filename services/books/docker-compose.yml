@@ -10,7 +10,7 @@ services:
       TZ: ${TIMEZONE}
       UMASK: 002
     volumes:
-      - ${LAZYLIBRARIAN_CONFIG:-./config}:/config
+      - ${LAZYLIBRARIAN_CONFIG:-./data/lazylibrarian}:/config
       - ${BOOKS_PATH:-./books}:/books
       - ${DOWNLOADS_PATH:-./downloads}:/downloads
     networks:
@@ -27,7 +27,7 @@ services:
       TZ: ${TIMEZONE}
       OAUTHLIB_INSECURE_TRANSPORT: 1
     volumes:
-      - ${CALIBREWEB_CONFIG:-./config}:/config
+      - ${CALIBREWEB_CONFIG:-./data/calibre-web}:/config
       - ${BOOKS_PATH:-./books}:/books
     networks:
       - proxy

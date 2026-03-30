@@ -39,7 +39,10 @@ Automated ebook management with Calibre-Web and LazyLibrarian.
 ### Setup order
 1. Deploy LazyLibrarian, connect to Prowlarr + qBittorrent, set Calibre library path
 2. Deploy Calibre-Web, point to same Calibre library path
-3. Add Caddy routes + Homepage entries
+
+### Post-deploy
+- **LazyLibrarian**: connect to Prowlarr as indexer source + qBittorrent as download client
+- **Calibre-Web**: point library path to `/books` (shared with LazyLibrarian)
 
 
 ## Phase 3: TV & Movies

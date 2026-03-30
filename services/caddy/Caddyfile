@@ -57,13 +57,13 @@ indexer.{$DOMAIN} {
 	reverse_proxy prowlarr:9696
 }
 
-lazylibrarian.{$DOMAIN} {
+books.{$DOMAIN} {
 	tls internal
 	import authelia
 	reverse_proxy lazylibrarian:5299
 }
 
-calibre.{$DOMAIN} {
+reader.{$DOMAIN} {
 	tls internal
 	import authelia
 	reverse_proxy calibre-web:8083
