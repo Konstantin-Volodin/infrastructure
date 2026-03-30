@@ -31,6 +31,17 @@ else
     ok ".env created."
 fi
 
+# ===== resolve relative paths to absolute =====
+info "resolving storage paths..."
+for key in DOWNLOADS_PATH QBITTORRENT_CONFIG PROWLARR_CONFIG BOOKS_PATH LAZYLIBRARIAN_CONFIG CALIBREWEB_CONFIG IMMICH_UPLOADS IMMICH_DB_DATA MEALIE_DATA; do
+    val=$(grep "^${key}=" .env | cut -d= -f2-)
+    if [[ "$val" == ./* ]]; then
+        abs="${PWD}/${val#./}"
+        sed -i "s|^${key}=.*|${key}=${abs}|" .env
+    fi
+done
+ok "storage paths resolved."
+
 # ===== populate auto-generated secrets (only if missing) =====
 gen_secret() {
     local key="$1"
