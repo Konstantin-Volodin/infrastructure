@@ -10,8 +10,8 @@ services:
       TZ: ${TIMEZONE}
     volumes:
       - ${SHELFMARK_CONFIG}:/config
-      - ${BOOKS_PATH}:/books
-      - ${BOOKS_INGEST}:/downloads
+      - ${DOWNLOADS_PATH}:/downloads     # 
+      - ${BOOKS_INGEST}:/books          # 
     networks:
       - proxy
 
@@ -27,6 +27,6 @@ services:
     volumes:
       - ${CALIBREWEB_CONFIG}:/config
       - ${BOOKS_PATH}:/calibre-library
-      - ${BOOKS_INGEST}:/downloads
+      - ${BOOKS_INGEST}:/books-ingest  
     networks:
       - proxy
