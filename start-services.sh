@@ -33,8 +33,8 @@ fi
 
 # ===== resolve relative paths to absolute =====
 info "resolving storage paths..."
-for key in DOWNLOADS_PATH QBITTORRENT_CONFIG PROWLARR_CONFIG BOOKS_PATH SHELFMARK_CONFIG CALIBREWEB_CONFIG IMMICH_UPLOADS IMMICH_DB_DATA MEALIE_DATA; do
-    val=$(grep "^${key}=" .env | cut -d= -f2-)
+for key in DOWNLOADS_PATH QBITTORRENT_CONFIG PROWLARR_CONFIG BOOKS_PATH BOOKS_INGEST SHELFMARK_CONFIG CALIBREWEB_CONFIG IMMICH_UPLOADS IMMICH_DB_DATA MEALIE_DATA; do
+    val=$(grep "^${key}=" .env | cut -d= -f2- | tr -d '\r')
     if [[ "$val" == ./* ]]; then
         abs="${PWD}/${val#./}"
         sed -i "s|^${key}=.*|${key}=${abs}|" .env
