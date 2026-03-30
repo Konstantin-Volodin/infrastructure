@@ -133,12 +133,15 @@ REAL_UID=$(id -u "$REAL_USER")
 REAL_GID=$(id -g "$REAL_USER")
 
 dirs=(
-    services/books/data/books
-    services/books/data/lazylibrarian
-    services/books/data/calibre-web
-    services/media-automation/data/downloads
-    services/media-automation/data/qbittorrent
-    services/media-automation/data/prowlarr
+    data/downloads
+    data/qbittorrent
+    data/prowlarr
+    data/books
+    data/lazylibrarian
+    data/calibre-web
+    data/immich-uploads
+    data/immich-postgres
+    data/mealie
 )
 for dir in "${dirs[@]}"; do
     mkdir -p "$dir"

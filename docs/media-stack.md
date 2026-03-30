@@ -20,7 +20,7 @@ Get your OpenVPN credentials from https://account.protonvpn.com/account#openvpn 
 3. Deploy Prowlarr and add indexers
 
 ### Post-deploy
-- **Verify VPN**: `docker exec gluetun wget -qO- ifconfig.me` — should return a Canadian IP
+- **Verify VPN**: `sudo docker exec gluetun wget -qO- ifconfig.me` — should return a Canadian IP
 - **qBittorrent login**: `sudo docker logs qbittorrent | grep "password"` for the generated password (user: `admin`)
 - **qBittorrent auth bypass**: Settings → Web UI → Authentication → enable "Bypass authentication for clients in whitelisted IP subnets" → add `172.0.0.0/8` (allows LazyLibrarian and other Docker containers to connect without credentials)
 - **Add indexers**: Prowlarr → Indexers → Add. Recommended public indexers:
@@ -42,8 +42,9 @@ Automated ebook management with Calibre-Web and LazyLibrarian.
 2. Deploy Calibre-Web, point to same Calibre library path
 
 ### Post-deploy
-- **qBittorrent in LazyLibrarian**: Settings → Downloaders → qBittorrent (host: `gluetun`, port: `8080`)
+- **apikey in LazyLibrarian**: Settings → Interface → API key (generate a new one, full access)
 - **Prowlarr → LazyLibrarian sync**: Prowlarr → Settings → Apps → Add → LazyLibrarian (Prowlarr server: `http://prowlarr:9696`, LazyLibrarian server: `http://lazylibrarian:5299`, API key: LazyLibrarian full access key from Settings → Interface)
+- **qBittorrent in LazyLibrarian**: Settings → Downloaders → qBittorrent (host: `gluetun`, port: `8080`)
 - **Calibre-Web**: login with `admin` / `admin123`, then:
   - Point library path to `/books`
   - Admin → Basic Configuration → Enable **Allow Reverse Proxy Authentication** → set header to `Remote-User`
