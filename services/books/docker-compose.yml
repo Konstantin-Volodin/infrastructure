@@ -1,7 +1,7 @@
 services:
   shelfmark:
     container_name: shelfmark
-    image: calibrain/shelfmark:latest
+    image: ghcr.io/calibrain/shelfmark:latest
     restart: always
     env_file: ../../.env
     environment:
