@@ -36,7 +36,7 @@ services:
     volumes:
       - ${QBITTORRENT_CONFIG}:/config
       - ${DOWNLOADS_PATH}:/downloads
-      - ${BOOKS_INGEST}:/books-ingest
+      - ${BOOKS_INGEST}:/cwa-book-ingest
 
   prowlarr:
     container_name: prowlarr
