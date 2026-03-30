@@ -44,3 +44,15 @@ apps.{$DOMAIN} {
 	import authelia
 	reverse_proxy homepage:3000
 }
+
+downloads.{$DOMAIN} {
+	tls internal
+	import authelia
+	reverse_proxy gluetun:8080
+}
+
+indexer.{$DOMAIN} {
+	tls internal
+	import authelia
+	reverse_proxy prowlarr:9696
+}

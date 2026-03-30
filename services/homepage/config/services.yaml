@@ -12,6 +12,25 @@
         server: my-docker
         container: mealie
 
+- Media Automation:
+    - qBittorrent:
+        icon: qbittorrent
+        href: https://downloads.{{HOMEPAGE_VAR_DOMAIN}}
+        description: Downloads
+        server: my-docker
+        container: qbittorrent
+    - Prowlarr:
+        icon: prowlarr
+        href: https://indexer.{{HOMEPAGE_VAR_DOMAIN}}
+        description: Indexer manager
+        server: my-docker
+        container: prowlarr
+    - Gluetun:
+        icon: gluetun
+        description: VPN tunnel
+        server: my-docker
+        container: gluetun
+
 - Core:
     - Pi-hole:
         icon: pi-hole

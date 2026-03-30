@@ -41,6 +41,14 @@ else
     echo "IMMICH_OIDC_SECRET=$(openssl rand -hex 128 | tr -d '\n')" >> .env
     echo "MEALIE_OIDC_SECRET=$(openssl rand -hex 128 | tr -d '\n')" >> .env
 
+    # protonvpn credentials (from account.protonvpn.com/account#openvpn)
+    info "enter ProtonVPN OpenVPN credentials (not your login password):"
+    read -rp "  OpenVPN username: " PROTON_USER
+    read -rsp "  OpenVPN password: " PROTON_PASS; echo
+    sed -i "s/^PROTONVPN_OPENVPN_USER=.*/PROTONVPN_OPENVPN_USER=${PROTON_USER}/" .env
+    sed -i "s/^PROTONVPN_OPENVPN_PASSWORD=.*/PROTONVPN_OPENVPN_PASSWORD=${PROTON_PASS}/" .env
+    ok "protonvpn credentials set."
+
     # done
     ok ".env file created."
 fi

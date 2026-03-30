@@ -1,0 +1,51 @@
+services:
+  gluetun:
+    container_name: gluetun
+    image: qmcgaw/gluetun:latest
+    restart: always
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    env_file: ../../.env
+    environment:
+      TZ: ${TIMEZONE}
+      VPN_SERVICE_PROVIDER: protonvpn
+      VPN_TYPE: openvpn
+      OPENVPN_USER: ${PROTONVPN_OPENVPN_USER}
+      OPENVPN_PASSWORD: ${PROTONVPN_OPENVPN_PASSWORD}
+      SERVER_COUNTRIES: ${VPN_SERVER_COUNTRIES}
+      FREE_ONLY: ${PROTONVPN_FREE_ONLY:-off}
+    networks:
+      - proxy
+
+  qbittorrent:
+    container_name: qbittorrent
+    image: lscr.io/linuxserver/qbittorrent:latest
+    restart: always
+    network_mode: "service:gluetun"
+    depends_on:
+      - gluetun
+    env_file: ../../.env
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: ${TIMEZONE}
+      WEBUI_PORT: 8080
+    volumes:
+      - ${QBITTORRENT_CONFIG}:/config
+      - ${DOWNLOADS_PATH}:/downloads
+
+  prowlarr:
+    container_name: prowlarr
+    image: lscr.io/linuxserver/prowlarr:latest
+    restart: always
+    env_file: ../../.env
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: ${TIMEZONE}
+    volumes:
+      - ${PROWLARR_CONFIG}:/config
+    networks:
+      - proxy
