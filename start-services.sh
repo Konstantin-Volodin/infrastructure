@@ -137,7 +137,7 @@ dirs=(
     data/qbittorrent
     data/prowlarr
     data/books
-    data/books-ingest
+    data/cwa-books-ingest
     data/shelfmark
     data/calibre-web
     data/immich-uploads
