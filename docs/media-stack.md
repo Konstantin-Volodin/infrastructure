@@ -22,6 +22,11 @@ Get your OpenVPN credentials from https://account.protonvpn.com/account#openvpn 
 ### Post-deploy
 - **Verify VPN**: `docker exec gluetun wget -qO- ifconfig.me` — should return a Canadian IP
 - **qBittorrent login**: `sudo docker logs qbittorrent | grep "password"` for the generated password (user: `admin`)
+- **Add indexers**: Prowlarr → Indexers → Add. Recommended public indexers:
+  - The Pirate Bay (general)
+  - LimeTorrents (general)
+  - YTS (movies)
+  - Nyaa (anime)
 
 
 ## Phase 2: Books
