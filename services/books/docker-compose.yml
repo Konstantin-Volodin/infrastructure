@@ -10,9 +10,8 @@ services:
       TZ: ${TIMEZONE}
     volumes:
       - ${SHELFMARK_CONFIG}:/config
-      - ${BOOKS_PATH}:/library
-      - ${BOOKS_INGEST}:/watch
-    command: ["shelfmark", "watch", "--source", "/watch", "--destination", "/library", "--config", "/config/config.yml", "--remove"]
+      - ${BOOKS_PATH}:/books
+      - ${BOOKS_INGEST}:/downloads
     networks:
       - proxy
 
