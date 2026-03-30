@@ -9,6 +9,7 @@ services:
       PGID: 1000
       TZ: ${TIMEZONE}
       UMASK: 002
+      DOCKER_MODS: linuxserver/mods:universal-calibre
     volumes:
       - ${LAZYLIBRARIAN_CONFIG}:/config
       - ${BOOKS_PATH}:/books
