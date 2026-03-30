@@ -31,7 +31,3 @@ services:
       - ${BOOKS_PATH:-./books}:/books
     networks:
       - proxy
-
-networks:
-  proxy:
-    external: true
