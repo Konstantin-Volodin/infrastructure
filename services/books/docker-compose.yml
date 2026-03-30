@@ -10,8 +10,7 @@ services:
       TZ: ${TIMEZONE}
     volumes:
       - ${SHELFMARK_CONFIG}:/config
-      - ${BOOKS_INGEST}:/books-ingest        # 
-      - ${DOWNLOADS_PATH}:/downloads           #
+      - ${BOOKS_INGEST}:/cwa-book-ingest
     networks:
       - proxy
 
