@@ -45,6 +45,8 @@ services:
       PUID: 1000
       PGID: 1000
       TZ: ${TIMEZONE}
+      PROWLARR__AUTH__METHOD: External
+      PROWLARR__AUTH__REQUIRED: DisabledForLocalAddresses
     volumes:
       - ${PROWLARR_CONFIG}:/config
     networks:

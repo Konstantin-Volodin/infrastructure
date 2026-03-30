@@ -19,6 +19,10 @@ Get your OpenVPN credentials from https://account.protonvpn.com/account#openvpn 
 2. Deploy qBittorrent (attached to Gluetun network)
 3. Deploy Prowlarr and add indexers
 
+### Post-deploy
+- **Verify VPN**: `docker exec gluetun wget -qO- ifconfig.me` — should return a Canadian IP
+- **qBittorrent login**: `sudo docker logs qbittorrent | grep "password"` for the generated password (user: `admin`)
+
 
 ## Phase 2: Books
 Automated ebook management with Calibre-Web and LazyLibrarian.
