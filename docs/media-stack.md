@@ -2,7 +2,7 @@
 Centralized documentation for a self-hosted media stack handling books, TV/movies, music, and audiobooks.
 
 
-## Phase 1: Shared services
+## (done) Phase 1: Shared services
 Shared services that support the media stack.
 
 ### Services
@@ -22,7 +22,7 @@ Get your OpenVPN credentials from https://account.protonvpn.com/account#openvpn 
 ### Post-deploy
 - **Verify VPN**: `sudo docker exec gluetun wget -qO- ifconfig.me` — should return a Canadian IP
 - **qBittorrent login**: `sudo docker logs qbittorrent | grep "password"` for the generated password (user: `admin`)
-- **qBittorrent auth bypass**: Settings → Web UI → Authentication → enable "Bypass authentication for clients in whitelisted IP subnets" → add `172.0.0.0/8` (allows LazyLibrarian and other Docker containers to connect without credentials)
+- **qBittorrent auth bypass**: Settings → Web UI → Authentication → enable "Bypass authentication for clients in whitelisted IP subnets" → add `172.0.0.0/8` (allows Shelfmark and other Docker containers to connect without credentials)
 - **Add indexers**: Prowlarr → Indexers → Add. Recommended public indexers:
   - The Pirate Bay (general)
   - LimeTorrents (general)
@@ -30,23 +30,24 @@ Get your OpenVPN credentials from https://account.protonvpn.com/account#openvpn 
   - Nyaa (anime)
 
 
-## Phase 2: Books
-Automated ebook management with Calibre-Web and LazyLibrarian.
+## (done) Phase 2: Books
+Automated ebook management with Shelfmark and Calibre-Web-Automated.
 
 ### Services
-- LazyLibrarian (book search and download automation)
-- Calibre-Web (ebook reading UI)
+- Shelfmark (book search and download automation)
+- Calibre-Web-Automated (ebook library manager + reading UI, auto-imports new books)
 
 ### Setup order
-1. Deploy LazyLibrarian, connect to Prowlarr + qBittorrent, set Calibre library path
-2. Deploy Calibre-Web, point to same Calibre library path
+1. Deploy Shelfmark + Calibre-Web-Automated
+2. Connect Shelfmark to Prowlarr + qBittorrent
+3. In qBittorrent, create a `books` category with save path `/cwa-book-ingest` and set torrent management mode to **Automatic**
 
 ### Post-deploy
-- **apikey in LazyLibrarian**: Settings → Interface → API key (generate a new one, full access)
-- **Prowlarr → LazyLibrarian sync**: Prowlarr → Settings → Apps → Add → LazyLibrarian (Prowlarr server: `http://prowlarr:9696`, LazyLibrarian server: `http://lazylibrarian:5299`, API key: LazyLibrarian full access key from Settings → Interface)
-- **qBittorrent in LazyLibrarian**: Settings → Downloaders → qBittorrent (host: `gluetun`, port: `8080`)
-- **Calibre-Web**: login with `admin` / `admin123`, then:
-  - Point library path to `/books`
+- **Shelfmark → Prowlarr**: Settings → Prowlarr (server: `http://prowlarr:9696`, API key from Prowlarr → Settings → General)
+- **Shelfmark → qBittorrent**: Settings → qBittorrent (host: `gluetun`, port: `8080`, category: `books`, destination: `/cwa-book-ingest`)
+- **Shelfmark direct download path**: Settings → Advanced → set download path to `/cwa-book-ingest` (otherwise files are lost inside the container)
+- **qBittorrent `books` category**: right-click Categories → Add → name `books`, save path `/cwa-book-ingest`; Options → Downloads → set torrent management mode to **Automatic**
+- **Calibre-Web-Automated**: login with `admin` / `admin123`, then:
   - Admin → Basic Configuration → Enable **Allow Reverse Proxy Authentication** → set header to `Remote-User`
   - Create a user matching your Authelia username
 
