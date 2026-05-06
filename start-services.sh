@@ -6,8 +6,6 @@
 # 	- creates an .env file with random secrets and start the services.
 # =============================================================================
 
-REMOTE="void"
-
 info() { echo "  [·] $*"; }
 ok()   { echo "  [✓] $*"; }
 warn() { echo "  [!] $*"; }
@@ -29,15 +27,14 @@ else
     info "creating .env from .env.example..."
     cp .env.example .env
     ok ".env created."
-fi
+fi 
 
 # ===== resolve relative paths to absolute =====
 info "resolving storage paths..."
 for key in DOWNLOADS_PATH QBITTORRENT_CONFIG PROWLARR_CONFIG BOOKS_PATH BOOKS_INGEST SHELFMARK_CONFIG CALIBREWEB_CONFIG IMMICH_UPLOADS IMMICH_DB_DATA MEALIE_DATA; do
     val=$(grep "^${key}=" .env | cut -d= -f2- | tr -d '\r')
     if [[ "$val" == ./* ]]; then
-        abs="${PWD}/${val#./}"
-        sed -i "s|^${key}=.*|${key}=${abs}|" .env
+        sed -i "s|^${key}=.*|${key}=$(realpath "$val")|" .env
     fi
 done
 ok "storage paths resolved."
@@ -110,8 +107,6 @@ info "generating immich config..."
 envsubst < services/immich/config/immich.json.tmpl > services/immich/config/immich.json
 ok "immich config generated."
 
-
-
 # ===== generate combined CA bundle (system CAs + caddy internal CA) =====
 if [ -f services/caddy/combined-ca.crt ]; then
     ok "combined CA bundle already exists."
@@ -150,6 +145,22 @@ for dir in "${dirs[@]}"; do
 done
 ok "data directories ready."
 
+# ===== pre-configure qbittorrent to disable WebUI auth (handled by Authelia) =====
+info "configuring qbittorrent auth bypass..."
+QBIT_CONF_DIR="${QBITTORRENT_CONFIG}/qBittorrent"
+QBIT_CONF="${QBIT_CONF_DIR}/qBittorrent.conf"
+mkdir -p "$QBIT_CONF_DIR"
+chown -R "$REAL_UID:$REAL_GID" "$QBIT_CONF_DIR"
+if [ ! -f "$QBIT_CONF" ]; then
+    printf '[Preferences]\nWebUI\\LocalHostAuth=false\n' > "$QBIT_CONF"
+    chown "$REAL_UID:$REAL_GID" "$QBIT_CONF"
+elif grep -q 'WebUI\\LocalHostAuth=' "$QBIT_CONF"; then
+    sed -i 's/WebUI\\LocalHostAuth=.*/WebUI\\LocalHostAuth=false/' "$QBIT_CONF"
+else
+    sed -i '/^\[Preferences\]/a WebUI\\LocalHostAuth=false' "$QBIT_CONF"
+fi
+ok "qbittorrent auth bypass configured."
+
 # ===== create docker network =====
 docker network inspect proxy >/dev/null 2>&1 || docker network create proxy
 ok "proxy network ready."
@@ -158,8 +169,7 @@ ok "proxy network ready."
 info "starting all services..."
 cd ${PWD}/services
 set -a; source ../.env; set +a
-docker compose down
-docker compose up -d
+docker compose up -d --remove-orphans
 ok "all services up."
 
 # ===== configure pihole wildcard DNS =====
