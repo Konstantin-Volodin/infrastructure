@@ -41,6 +41,16 @@ prepare_env() {
     HOST_IP=$(hostname -I | awk '{print $1}')
     env_set HOST_IP "$HOST_IP"
     ok "detected host IP: ${HOST_IP}"
+
+    if getent group render >/dev/null 2>&1; then
+        local render_gid
+        render_gid=$(getent group render | cut -d: -f3)
+        env_set RENDER_GID "$render_gid"
+        ok "detected render group GID: ${render_gid}"
+    else
+        warn "no 'render' group on host — Jellyfin HW transcoding may fail"
+        env_set RENDER_GID "109"
+    fi
 }
 
 generate_secrets() {
@@ -156,6 +166,12 @@ create_data_directories() {
         "$DATA_DIR/downloads"
         "$DATA_DIR/qbittorrent"
         "$DATA_DIR/prowlarr"
+        "$DATA_DIR/sonarr"
+        "$DATA_DIR/radarr"
+        "$DATA_DIR/tv"
+        "$DATA_DIR/movies"
+        "$DATA_DIR/jellyfin"
+        "$DATA_DIR/jellyfin-cache"
         "$DATA_DIR/books"
         "$DATA_DIR/cwa-books-ingest"
         "$DATA_DIR/shelfmark"

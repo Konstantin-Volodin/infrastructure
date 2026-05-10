@@ -68,3 +68,21 @@ reader.{$DOMAIN} {
 	import authelia
 	reverse_proxy calibre-web-automated:8083
 }
+
+shows.{$DOMAIN} {
+	tls internal
+	import authelia
+	reverse_proxy gluetun:8989
+}
+
+movies.{$DOMAIN} {
+	tls internal
+	import authelia
+	reverse_proxy gluetun:7878
+}
+
+watch.{$DOMAIN} {
+	tls internal
+	import authelia
+	reverse_proxy jellyfin:8096
+}

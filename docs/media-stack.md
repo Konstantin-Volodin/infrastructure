@@ -1,21 +1,7 @@
 # Media Automation Stack
 Centralized documentation for a self-hosted media stack handling books, TV/movies, music, and audiobooks.
 
-Phase 1 (shared services: Prowlarr, qBittorrent, Gluetun) and Phase 2 (Books: Shelfmark, Calibre-Web-Automated) are deployed — see [README.md](../README.md#post-setup) for their operational reference.
-
-
-## Phase 3: TV & Movies
-Automated TV show and movie management with streaming via Jellyfin.
-
-### Services
-- Sonarr (TV show automation)
-- Radarr (movie automation)
-- Jellyfin (media server)
-
-### Setup order
-1. Deploy Sonarr + Radarr, connect to Prowlarr + qBittorrent
-2. Deploy Jellyfin, point to media directories
-3. Add Caddy routes + Homepage entries
+Phase 1 (shared services: Prowlarr, qBittorrent, Gluetun), Phase 2 (Books: Shelfmark, Calibre-Web-Automated), and Phase 3 (TV/Movies: Sonarr, Radarr, Jellyfin) are deployed — see [README.md](../README.md#post-setup) for their operational reference.
 
 
 ## Optional: Music

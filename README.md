@@ -21,19 +21,17 @@ just up         # start services
 
 ### Common targets
 
-| Command              | What it does                              | Script                                                         |
-|----------------------|-------------------------------------------|----------------------------------------------------------------|
-| `just prepare`       | one time host setup                       | [scripts/prepare-linux.sh](scripts/prepare-linux.sh)           |
-| `just env`           | sync .env from template, generate secrets | [scripts/bootstrap-services.sh](scripts/bootstrap-services.sh) |
-| `just validate`      | lint, validate docker compose             | [scripts/validate-config.sh](scripts/validate.sh)              |
-| `just up`            | env, secrets, starts services             | [scripts/start-services.sh](scripts/start-services.sh)         |
-| `just down`          | stops services                            | [scripts/stop-services.sh](scripts/stop-services.sh)           |
-| `just restart [svc]` | restart everything,  one service          |                                                                |
-| `just logs [svc]`    | logs for the stack, or one service        |                                                                |
-| `just ps`            | show running services                     |                                                                |
-| `just pull`          | pull latest images                        |                                                                |
-
-Run `just` with no args to list every target.
+| Command                  | What it does                              | Script                                                         |
+|--------------------------|-------------------------------------------|----------------------------------------------------------------|
+| `just`                   | show all available commands               | [justfile](justfile)                                           | 
+| `just prepare`           | linux setup                               | [scripts/prepare-linux.sh](scripts/prepare-linux.sh)           |
+| `just validate`          | validate docker compose files             | [scripts/validate-config.sh](scripts/validate.sh)              |
+| `just env`               | sync .env file                            | [scripts/bootstrap-services.sh](scripts/bootstrap-services.sh) |
+| `just up/down/restart`   | service management                        |                                                                |
+| `just restart`           | restart services                          |                                                                |
+| `just logs [svc]`        | logs for the stack, or one service        |                                                                |
+| `just ps`                | show running services                     |                                                                |
+| `just pull`              | pull latest images                        |                                                                |
 
 ## Post-setup
 
@@ -68,23 +66,42 @@ Run `just` with no args to list every target.
 - Admin → Basic Configuration → enable **Allow Reverse Proxy Authentication** → set header to `Remote-User`
 - Create a user matching your Authelia username
 
+**qBittorrent `tv` and `movies` categories** - right-click Categories → Add → name `tv`, save path `/downloads/tv`; repeat for `movies` with save path `/downloads/movies`.
+
+**Sonarr** -
+- Settings → Indexers → Add → Prowlarr (host `gluetun`, port `9696`, API key from Prowlarr → Settings → General). Or sync indexers from Prowlarr → Apps → Add → Sonarr (URL `http://gluetun:8989`).
+- Settings → Download Clients → Add → qBittorrent (host `gluetun`, port `8080`, category `tv`)
+- Settings → Media Management → Root Folder → `/data/tv`
+- Settings → Download Clients → Remote Path Mappings → Host `gluetun`, Remote Path `/downloads/`, Local Path `/data/downloads/` (so Sonarr can find finished torrents and hardlink them)
+
+**Radarr** - same as Sonarr, but category `movies`, root folder `/data/movies`, App URL `http://gluetun:7878`.
+
+**Jellyfin** - first launch at `https://watch.voxlab.home`:
+- Complete the setup wizard (create admin user)
+- Add libraries: `/data/tv` (TV Shows) and `/data/movies` (Movies)
+- Dashboard → Playback → Transcoding → enable **Intel QuickSync (QSV)**, confirm `/dev/dri/renderD128` is detected
+- Verify HW transcoding works: `sudo docker exec jellyfin /usr/lib/jellyfin-ffmpeg/vainfo` should list the iHD driver and H.264/HEVC profiles
+
+**Jellyfin client limitation** - `watch.voxlab.home` is behind Authelia, so Jellyfin's mobile/TV apps and Chromecast can't authenticate (they don't speak the Authelia web flow). Web browser access works. To use mobile apps, expose Jellyfin on a separate non-auth subdomain or map host port `8096` directly.
+
 ## Services
 
-| Service               | URL                              | Status    |
-|-----------------------|----------------------------------|-----------|
-| Caddy                 | -                                | Installed |
-| Pi-hole               | `https://dns.voxlab.home/admin/` | Installed |
-| Authelia              | `https://auth.voxlab.home`       | Installed |
-| Immich                | `https://photos.voxlab.home`     | Installed |
-| Mealie                | `https://recipes.voxlab.home`    | Installed |
-| Homepage              | `https://apps.voxlab.home`       | Installed |
-| Book Reader           | `https://reader.voxlab.home/`    | Installed |
-| Book Downloader       | `https://books.voxlab.home/`     | Installed |
-| Sonarr / Radarr       | -                                | Planned   |
-| Prowlarr              | `https://indexer.voxlab.home/`   | Installed |
-| qBittorrent + Gluetun | `https://downloads.voxlab.home/` | Installed |
-| Diun                  | -                                | Planned   |
-| Nextcloud             | -                                | Planned   |
+| Service                  | URL                              | Status    |
+|--------------------------|----------------------------------|-----------|
+| Caddy                    | -                                | Installed |
+| Pi-hole                  | `https://dns.voxlab.home/admin/` | Installed |
+| Authelia                 | `https://auth.voxlab.home`       | Installed |
+| Immich                   | `https://photos.voxlab.home`     | Installed |
+| Mealie                   | `https://recipes.voxlab.home`    | Installed |
+| Homepage                 | `https://apps.voxlab.home`       | Installed |
+| Book Reader              | `https://reader.voxlab.home/`    | Installed |
+| Book Downloader          | `https://books.voxlab.home/`     | Installed |
+| Sonarr                   | `https://shows.voxlab.home/`     | Installed |
+| Radarr                   | `https://movies.voxlab.home/`    | Installed |
+| Jellyfin                 | `https://watch.voxlab.home/`     | Installed |
+| Prowlarr                 | `https://indexer.voxlab.home/`   | Installed |
+| qBittorrent + Gluetun    | `https://downloads.voxlab.home/` | Installed |
+| Nextcloud (or similar)   | -                                | Planned   |
 
 ### Architecture
 

@@ -17,6 +17,12 @@
         subtitle: calibre-web-automated
         server: my-docker
         container: calibre-web-automated
+    - Watch:
+        icon: jellyfin
+        href: https://watch.{{HOMEPAGE_VAR_DOMAIN}}
+        subtitle: Jellyfin
+        server: my-docker
+        container: jellyfin
 
 - Core:
     - DNS:
@@ -61,3 +67,15 @@
         subtitle: Shelfmark
         server: my-docker
         container: shelfmark
+    - TV Shows:
+        icon: sonarr
+        href: https://shows.{{HOMEPAGE_VAR_DOMAIN}}
+        subtitle: Sonarr
+        server: my-docker
+        container: sonarr
+    - Movies:
+        icon: radarr
+        href: https://movies.{{HOMEPAGE_VAR_DOMAIN}}
+        subtitle: Radarr
+        server: my-docker
+        container: radarr

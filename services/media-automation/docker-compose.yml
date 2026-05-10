@@ -54,3 +54,39 @@ services:
       PROWLARR__AUTH__REQUIRED: DisabledForLocalAddresses
     volumes:
       - ${DATA_DIR}/prowlarr:/config
+
+  sonarr:
+    container_name: sonarr
+    image: lscr.io/linuxserver/sonarr:latest
+    restart: always
+    network_mode: "service:gluetun"
+    depends_on:
+      - gluetun
+    env_file: ../../.env
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: ${TIMEZONE}
+      SONARR__AUTH__METHOD: External
+      SONARR__AUTH__REQUIRED: DisabledForLocalAddresses
+    volumes:
+      - ${DATA_DIR}/sonarr:/config
+      - ${DATA_DIR}:/data
+
+  radarr:
+    container_name: radarr
+    image: lscr.io/linuxserver/radarr:latest
+    restart: always
+    network_mode: "service:gluetun"
+    depends_on:
+      - gluetun
+    env_file: ../../.env
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: ${TIMEZONE}
+      RADARR__AUTH__METHOD: External
+      RADARR__AUTH__REQUIRED: DisabledForLocalAddresses
+    volumes:
+      - ${DATA_DIR}/radarr:/config
+      - ${DATA_DIR}:/data

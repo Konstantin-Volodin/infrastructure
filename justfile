@@ -29,9 +29,8 @@ validate:
 down:
     sudo bash scripts/stop-services.sh
 
-# Restart everything, or one service: `just restart caddy`.
-restart service="":
-    sudo {{compose}} restart {{service}}
+# Restart the stack: full down then up.
+restart: down up
 
 # Show running services.
 ps:
