@@ -2,29 +2,45 @@
 
 Reproducible, container-first homelab. Infrastructure as code.
 
+## Prerequisites
+
+- Ubuntu Server 24.04 LTS host (any Linux distro, but scripts are written for Ubuntu)
+- required: `git`, `openssl`, `tailscale`
+- optional: `shellcheck`
+
 ## Quick start
 
 ```bash
-# 1. provision the host
 git clone git@github.com:Konstantin-Volodin/infrastructure.git
 cd infrastructure
-sudo bash prepare-linux.sh
 
-# 2. start services
-sudo bash start-services.sh
+just prepare    # one-time host setup
+just up         # sync .env, generate secrets, start services. safe to rerun
 ```
 
-`prepare-linux.sh` handles system updates, SSH hardening, UFW firewall, fail2ban, static networking, Docker, and disabling the systemd DNS stub so Pi-hole can bind port 53. \
-`start-services.sh` generates secrets, creates the `.env`, builds Authelia keys, and brings up all containers.
+### Common targets
+
+| Command              | What it does                              | Script                                                      |
+|----------------------|-------------------------------------------|-------------------------------------------------------------|
+| `just prepare`       | one time host setup                       | [scripts/prepare-linux.sh](scripts/prepare-linux.sh)        |
+| `just up`            | env, secrets, starts services             | [scripts/start-services.sh](scripts/start-services.sh)      |
+| `just down`          | stops services                            | [scripts/stop-services.sh](scripts/stop-services.sh)        |
+| `just restart [svc]` | restart everything,  one service          |                                                             |
+| `just logs [svc]`    | logs for the stack, or one service        |                                                             |
+| `just ps`            | show running services                     |                                                             |
+| `just pull`          | pull latest images                        |                                                             |
+| `just validate`      | lint, validate docker compose             | [scripts/validate-config.sh](scripts/validate.sh)           |
+
+Run `just` with no args to list every target.
 
 ### Post-setup
 
 **Tailscale DNS** - route `*.voxlab.home` queries to Pi-hole:
-1. Get void's Tailscale IP: `tailscale ip -4`
-2. Tailscale admin → DNS → Nameservers → add custom nameserver with the `100.x.x.x` address
+1. get tailscale IP: `tailscale ip -4`
+2. tailscale admin → DNS → Nameservers → add custom nameserver with the `100.x.x.x` address
 3. Restrict to domain: `voxlab.home`
 
-**Authelia first login** - get the one-time password: `sudo docker exec authelia cat /data/notification.txt`
+**Authelia first login** - the initial admin password is printed once by `scripts/bootstrap-services.sh` during `just env` or `just up` on first run; it is not stored on disk in plaintext. After login, change it from the Authelia UI (Settings -> Account). For password resets after that, the one-time link lands in `sudo docker exec authelia cat /data/notification.txt`.
 
 **Pihole login** - password to access pihole website `sudo docker logs pihole | grep "password"`
 
@@ -37,16 +53,17 @@ sudo bash start-services.sh
 
 | Service               | URL                              | Status    |
 |-----------------------|----------------------------------|-----------|
-| Pi-hole               | `https://dns.voxlab.home/admin/` | Installed |
 | Caddy                 | -                                | Installed |
+| Pi-hole               | `https://dns.voxlab.home/admin/` | Installed |
 | Authelia              | `https://auth.voxlab.home`       | Installed |
 | Immich                | `https://photos.voxlab.home`     | Installed |
 | Mealie                | `https://recipes.voxlab.home`    | Installed |
 | Homepage              | `https://apps.voxlab.home`       | Installed |
-| Jellyfin              | -                                | Planned   |
+| Book Reader           | `https://reader.voxlab.home/`    | Installed |
+| Book Downloader       | `https://books.voxlab.home/`     | Installed |
 | Sonarr / Radarr       | -                                | Planned   |
-| Prowlarr              | -                                | Planned   |
-| qBittorrent + Gluetun | -                                | Planned   |
+| Prowlarr              | `https://indexer.voxlab.home/`   | Installed |
+| qBittorrent + Gluetun | `https://downloads.voxlab.home/` | Installed |
 | Diun                  | -                                | Planned   |
 | Nextcloud             | -                                | Planned   |
 
@@ -62,8 +79,12 @@ sudo bash start-services.sh
 
 | File                                | Purpose                                       |
 |-------------------------------------|-----------------------------------------------|
-| prepare-linux.sh                    | Host bootstrap                                |
-| start-services.sh                   | Secret generation + startup                   |
+| justfile                            | Task runner entry point                       |
+| scripts/prepare-linux.sh            | Host bootstrap                                |
+| scripts/bootstrap-services.sh       | Service bootstrap orchestrator                |
+| scripts/start-services.sh           | Compose startup + post-start configuration    |
+| scripts/validate.sh                 | Syntax + compose config validation            |
+| scripts/lib/{log,env,runtime}.sh    | Shared shell helpers                          |
 | services/docker-compose.yml         | Top-level compose (includes all services)     |
 | services/caddy/Caddyfile            | Routing + forward auth                        |
 
