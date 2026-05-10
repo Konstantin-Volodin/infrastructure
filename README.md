@@ -35,7 +35,7 @@ just up         # start services
 
 Run `just` with no args to list every target.
 
-### Post-setup
+## Post-setup
 
 **Tailscale DNS** - route `*.voxlab.home` queries to Pi-hole:
 1. get tailscale IP: `tailscale ip -4`
@@ -50,6 +50,23 @@ Run `just` with no args to list every target.
 1. Download the CA cert from void: `scp vox@void:~/infrastructure/services/caddy/pki/internal-ca.crt .`
 2. Firefox (PC): Settings → Privacy & Security → Certificates → View Certificates → Authorities → Import → check "Trust this CA to identify websites"
 3. Android: Settings → Security → Encryption & credentials → Install a certificate → CA certificate
+
+**Gluetun VPN** - connects via ProtonVPN (OpenVPN). Get credentials from https://account.protonvpn.com/account#openvpn and set `PROTONVPN_OPENVPN_USER` / `PROTONVPN_OPENVPN_PASSWORD` in `.env`. Verify: `sudo docker exec gluetun wget -qO- ifconfig.me` (should return a Canadian IP).
+
+**qBittorrent login** - `sudo docker logs qbittorrent | grep "password"` for the generated password (user: `admin`). To let other Docker containers connect without credentials: Settings → Web UI → Authentication → enable "Bypass authentication for clients in whitelisted IP subnets" → add `172.0.0.0/8`.
+
+**qBittorrent `books` category** - right-click Categories → Add → name `books`, save path `/cwa-book-ingest`; Options → Downloads → set torrent management mode to **Automatic**.
+
+**Prowlarr indexers** - Indexers → Add. Recommended public indexers: The Pirate Bay, LimeTorrents, YTS (movies), Nyaa (anime).
+
+**Shelfmark** -
+- Settings → Prowlarr (server: `http://gluetun:9696`, API key from Prowlarr → Settings → General)
+- Settings → qBittorrent (host: `gluetun`, port: `8080`, category: `books`, destination: `/cwa-book-ingest`)
+- Settings → Advanced → download path: `/cwa-book-ingest` (otherwise files are lost inside the container)
+
+**Calibre-Web-Automated** - login with `admin` / `admin123`, then:
+- Admin → Basic Configuration → enable **Allow Reverse Proxy Authentication** → set header to `Remote-User`
+- Create a user matching your Authelia username
 
 ## Services
 
@@ -76,19 +93,6 @@ Run `just` with no args to list every target.
 - DNS: Pi-hole serves wildcard `*.voxlab.home` to host IP
 - Remote access: Tailscale VPN + Pi-hole DNS
 - Containers: Docker Compose per service with shared `proxy` network
-
-## Key files
-
-| File                                | Purpose                                       |
-|-------------------------------------|-----------------------------------------------|
-| justfile                            | Task runner entry point                       |
-| scripts/prepare-linux.sh            | Host bootstrap                                |
-| scripts/bootstrap-services.sh       | Service bootstrap orchestrator                |
-| scripts/start-services.sh           | Compose startup + post-start configuration    |
-| scripts/validate.sh                 | Syntax + compose config validation            |
-| scripts/lib/{log,env,runtime}.sh    | Shared shell helpers                          |
-| services/docker-compose.yml         | Top-level compose (includes all services)     |
-| services/caddy/Caddyfile            | Routing + forward auth                        |
 
 ## Hardware
 
