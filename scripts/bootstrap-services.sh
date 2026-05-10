@@ -151,6 +151,7 @@ create_data_directories() {
     local dir
 
     info "ensuring data directories exist with correct ownership..."
+    # Dirs whose contents are managed by the host user (vox).
     dirs=(
         "$DATA_DIR/downloads"
         "$DATA_DIR/qbittorrent"
@@ -160,14 +161,20 @@ create_data_directories() {
         "$DATA_DIR/shelfmark"
         "$DATA_DIR/calibre-web"
         "$DATA_DIR/immich-uploads"
-        "$DATA_DIR/immich-postgres"
         "$DATA_DIR/mealie"
     )
 
     for dir in "${dirs[@]}"; do
-        mkdir -p "$dir"
-        chown -R "$REAL_UID:$REAL_GID" "$dir"
+        if [ ! -d "$dir" ]; then
+            mkdir -p "$dir"
+            chown "$REAL_UID:$REAL_GID" "$dir"
+        fi
     done
+
+    # Container-managed dirs: create only, never chown — the container's own
+    # user (e.g. postgres UID 999) owns the contents.
+    mkdir -p "$DATA_DIR/immich-postgres"
+
     ok "data directories ready."
 }
 

@@ -43,7 +43,7 @@ Automated ebook management with Shelfmark and Calibre-Web-Automated.
 3. In qBittorrent, create a `books` category with save path `/cwa-book-ingest` and set torrent management mode to **Automatic**
 
 ### Post-deploy
-- **Shelfmark → Prowlarr**: Settings → Prowlarr (server: `http://prowlarr:9696`, API key from Prowlarr → Settings → General)
+- **Shelfmark → Prowlarr**: Settings → Prowlarr (server: `http://gluetun:9696`, API key from Prowlarr → Settings → General)
 - **Shelfmark → qBittorrent**: Settings → qBittorrent (host: `gluetun`, port: `8080`, category: `books`, destination: `/cwa-book-ingest`)
 - **Shelfmark direct download path**: Settings → Advanced → set download path to `/cwa-book-ingest` (otherwise files are lost inside the container)
 - **qBittorrent `books` category**: right-click Categories → Add → name `books`, save path `/cwa-book-ingest`; Options → Downloads → set torrent management mode to **Automatic**

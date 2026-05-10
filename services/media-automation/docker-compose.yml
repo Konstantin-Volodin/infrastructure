@@ -42,6 +42,9 @@ services:
     container_name: prowlarr
     image: lscr.io/linuxserver/prowlarr:latest
     restart: always
+    network_mode: "service:gluetun"
+    depends_on:
+      - gluetun
     env_file: ../../.env
     environment:
       PUID: 1000
@@ -51,5 +54,3 @@ services:
       PROWLARR__AUTH__REQUIRED: DisabledForLocalAddresses
     volumes:
       - ${DATA_DIR}/prowlarr:/config
-    networks:
-      - proxy

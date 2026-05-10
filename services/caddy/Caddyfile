@@ -54,7 +54,7 @@ downloads.{$DOMAIN} {
 indexer.{$DOMAIN} {
 	tls internal
 	import authelia
-	reverse_proxy prowlarr:9696
+	reverse_proxy gluetun:9696
 }
 
 books.{$DOMAIN} {
