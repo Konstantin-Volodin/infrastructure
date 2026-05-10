@@ -3,7 +3,7 @@
 # Expects log.sh helpers (info/ok/warn/die) to already be sourced.
 
 require_root() {
-    [[ $EUID -ne 0 ]] && die "run as root: sudo bash $0"
+    [[ $EUID -eq 0 ]] || die "run as root: sudo bash $0"
 }
 
 detect_real_user() {

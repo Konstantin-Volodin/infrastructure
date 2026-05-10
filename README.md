@@ -5,7 +5,7 @@ Reproducible, container-first homelab. Infrastructure as code.
 ## Prerequisites
 
 - Ubuntu Server 24.04 LTS host (any Linux distro, but scripts are written for Ubuntu)
-- required: `git`, `openssl`, `tailscale`
+- required: `git`, `openssl`, `tailscale`, `just`
 - optional: `shellcheck`
 
 ## Quick start
@@ -15,21 +15,23 @@ git clone git@github.com:Konstantin-Volodin/infrastructure.git
 cd infrastructure
 
 just prepare    # one-time host setup
-just up         # sync .env, generate secrets, start services. safe to rerun
+just env        # sync .env, generate secrets, safe to rerun
+just up         # start services
 ```
 
 ### Common targets
 
-| Command              | What it does                              | Script                                                      |
-|----------------------|-------------------------------------------|-------------------------------------------------------------|
-| `just prepare`       | one time host setup                       | [scripts/prepare-linux.sh](scripts/prepare-linux.sh)        |
-| `just up`            | env, secrets, starts services             | [scripts/start-services.sh](scripts/start-services.sh)      |
-| `just down`          | stops services                            | [scripts/stop-services.sh](scripts/stop-services.sh)        |
-| `just restart [svc]` | restart everything,  one service          |                                                             |
-| `just logs [svc]`    | logs for the stack, or one service        |                                                             |
-| `just ps`            | show running services                     |                                                             |
-| `just pull`          | pull latest images                        |                                                             |
-| `just validate`      | lint, validate docker compose             | [scripts/validate-config.sh](scripts/validate.sh)           |
+| Command              | What it does                              | Script                                                         |
+|----------------------|-------------------------------------------|----------------------------------------------------------------|
+| `just prepare`       | one time host setup                       | [scripts/prepare-linux.sh](scripts/prepare-linux.sh)           |
+| `just env`           | sync .env from template, generate secrets | [scripts/bootstrap-services.sh](scripts/bootstrap-services.sh) |
+| `just validate`      | lint, validate docker compose             | [scripts/validate-config.sh](scripts/validate.sh)              |
+| `just up`            | env, secrets, starts services             | [scripts/start-services.sh](scripts/start-services.sh)         |
+| `just down`          | stops services                            | [scripts/stop-services.sh](scripts/stop-services.sh)           |
+| `just restart [svc]` | restart everything,  one service          |                                                                |
+| `just logs [svc]`    | logs for the stack, or one service        |                                                                |
+| `just ps`            | show running services                     |                                                                |
+| `just pull`          | pull latest images                        |                                                                |
 
 Run `just` with no args to list every target.
 

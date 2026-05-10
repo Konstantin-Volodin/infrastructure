@@ -17,13 +17,13 @@ prepare:
 env:
     sudo bash scripts/bootstrap-services.sh
 
-# Bash syntax + shellcheck (if present) + `docker compose config`.
-validate:
-    bash scripts/validate.sh
-
 # Bring the stack up and configure service-level post-start bits.
 up: env
     sudo bash scripts/start-services.sh
+
+# Bash syntax + shellcheck (if present) + `docker compose config`.
+validate:
+    bash scripts/validate.sh
 
 # Stop the stack and remove orphans.
 down:
