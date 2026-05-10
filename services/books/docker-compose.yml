@@ -9,8 +9,8 @@ services:
       PGID: 1000
       TZ: ${TIMEZONE}
     volumes:
-      - ${SHELFMARK_CONFIG}:/config
-      - ${BOOKS_INGEST}:/cwa-book-ingest
+      - ${DATA_DIR}/shelfmark:/config
+      - ${DATA_DIR}/cwa-books-ingest:/cwa-book-ingest
     networks:
       - proxy
 
@@ -24,8 +24,8 @@ services:
       PGID: 1000
       TZ: ${TIMEZONE}
     volumes:
-      - ${CALIBREWEB_CONFIG}:/config
-      - ${BOOKS_PATH}:/calibre-library
-      - ${BOOKS_INGEST}:/cwa-book-ingest
+      - ${DATA_DIR}/calibre-web:/config
+      - ${DATA_DIR}/books:/calibre-library
+      - ${DATA_DIR}/cwa-books-ingest:/cwa-book-ingest
     networks:
       - proxy
