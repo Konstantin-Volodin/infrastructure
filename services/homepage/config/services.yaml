@@ -12,7 +12,7 @@
         server: my-docker
         container: mealie
     - Books:
-        icon: calibre-web-automated
+        icon: calibre-web
         href: https://reader.{{HOMEPAGE_VAR_DOMAIN}}
         subtitle: calibre-web-automated
         server: my-docker
