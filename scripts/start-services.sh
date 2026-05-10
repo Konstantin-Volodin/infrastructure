@@ -36,5 +36,4 @@ else
 fi
 
 # Only fix git-tracked files so pull works; leave secrets/data root-owned.
-git ls-files -z | xargs -0 chown "$REAL_USER":"$REAL_USER"
-ok "git-tracked file ownership fixed for $REAL_USER."
+chown_git_tracked_files

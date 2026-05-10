@@ -27,7 +27,7 @@ validate:
 
 # Stop the stack and remove orphans.
 down:
-    sudo {{compose}} down --remove-orphans
+    sudo bash scripts/stop-services.sh
 
 # Restart everything, or one service: `just restart caddy`.
 restart service="":
