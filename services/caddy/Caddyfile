@@ -44,3 +44,46 @@ apps.{$DOMAIN} {
 	import authelia
 	reverse_proxy homepage:3000
 }
+
+downloads.{$DOMAIN} {
+	tls internal
+	import authelia
+	reverse_proxy gluetun:8080
+}
+
+indexer.{$DOMAIN} {
+	tls internal
+	import authelia
+	reverse_proxy gluetun:9696
+}
+
+books.{$DOMAIN} {
+	tls internal
+	import authelia
+	reverse_proxy shelfmark:8084
+}
+
+reader.{$DOMAIN} {
+	tls internal
+	import authelia
+	reverse_proxy calibre-web-automated:8083
+}
+
+shows.{$DOMAIN} {
+	tls internal
+	import authelia
+	reverse_proxy gluetun:8989
+}
+
+movies.{$DOMAIN} {
+	tls internal
+	import authelia
+	reverse_proxy gluetun:7878
+}
+
+watch.{$DOMAIN} {
+	tls internal
+	reverse_proxy jellyfin:8096 {
+		header_up X-Real-IP {remote_host}
+	}
+}

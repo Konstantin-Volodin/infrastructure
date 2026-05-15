@@ -1,0 +1,23 @@
+services:
+  jellyfin:
+    container_name: jellyfin
+    image: lscr.io/linuxserver/jellyfin:latest
+    restart: always
+    env_file: ../../.env
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: ${TIMEZONE}
+      JELLYFIN_PublishedServerUrl: https://watch.${DOMAIN}
+    devices:
+      - /dev/dri:/dev/dri
+    group_add:
+      - "44"                 # video
+      - "${RENDER_GID:-109}" # render (Ubuntu default 109; bootstrap auto-detects)
+    volumes:
+      - ${DATA_DIR}/jellyfin:/config
+      - ${DATA_DIR}/jellyfin-cache:/cache
+      - ${DATA_DIR}/tv:/data/tv:ro
+      - ${DATA_DIR}/movies:/data/movies:ro
+    networks:
+      - proxy
