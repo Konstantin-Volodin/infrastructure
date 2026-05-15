@@ -84,7 +84,7 @@ just up         # start services
 - Settings → Download Clients → Add → qBittorrent (host `gluetun`, port `8080`, category `tv`)
 - Settings → Media Management → Root Folder → `/data/tv`
 
-**Radarr (movies)** - same as Sonarr, but category `movies`, root folder `/data/movies`, App URL `http://gluetun:7878`.
+**Radarr (movies)** - same as Sonarr, but category `movies`, root folder `/data/movies`
 
 **Jellyfin** - first launch at `https://watch.voxlab.home`:
 - Complete the setup wizard (create admin user)
