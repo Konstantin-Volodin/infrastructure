@@ -25,7 +25,7 @@ just up         # start services
 |--------------------------|-------------------------------------------|----------------------------------------------------------------|
 | `just`                   | show all available commands               | [justfile](justfile)                                           | 
 | `just prepare`           | linux setup                               | [scripts/prepare-linux.sh](scripts/prepare-linux.sh)           |
-| `just validate`          | validate docker compose files             | [scripts/validate-config.sh](scripts/validate.sh)              |
+| `just validate`          | validate docker compose files             | [scripts/validate.sh](scripts/validate.sh)              |
 | `just env`               | sync .env file                            | [scripts/bootstrap-services.sh](scripts/bootstrap-services.sh) |
 | `just up/down/restart`   | service management                        |                                                                |
 | `just restart`           | restart services                          |                                                                |
@@ -92,7 +92,7 @@ just up         # start services
 - Dashboard → Playback → Transcoding → enable **Intel QuickSync (QSV)**, confirm `/dev/dri/renderD128` is detected
 - Verify HW transcoding works: `sudo docker exec jellyfin /usr/lib/jellyfin-ffmpeg/vainfo` should list the iHD driver and H.264/HEVC profiles
 
-**Jellyfin client limitation** - `watch.voxlab.home` is behind Authelia, so Jellyfin's mobile/TV apps and Chromecast can't authenticate (they don't speak the Authelia web flow). Web browser access works. To use mobile apps, expose Jellyfin on a separate non-auth subdomain or map host port `8096` directly.
+**Jellyfin auth** - `watch.voxlab.home` is intentionally **not** behind Authelia. Jellyfin's mobile/TV apps and Chromecast don't speak the Authelia web flow, so the route relies on Jellyfin's own user accounts (created in the setup wizard) instead.
 
 ## Services
 
@@ -140,9 +140,7 @@ just up         # start services
 - storage: 1 TB NVMe + 2 TB SATA (4xSATA + 2x3.5" bays total)
 - GPU: NVIDIA RTX 3060 Ti
 - OS: Windows 11
-
-### core
-- hardware: planned laptop upgrade to ssh into stuff on the go
+- planned: convert to synapse node and upgrade to core becomes a laptop to SSH anywhere
 
 ## Constraints
 
