@@ -83,8 +83,6 @@ movies.{$DOMAIN} {
 
 watch.{$DOMAIN} {
 	tls internal
-	import authelia
-	header -WWW-Authenticate
 	reverse_proxy jellyfin:8096 {
 		header_up X-Real-IP {remote_host}
 	}
