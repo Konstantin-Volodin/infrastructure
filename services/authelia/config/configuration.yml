@@ -38,10 +38,10 @@ access_control:
     - domain: 
       - 'auth.{{ env "DOMAIN" }}'
       policy: 'bypass'
-    - domain: 
+    - domain:
       - '{{ env "DOMAIN"}}'
       - '*.{{ env "DOMAIN" }}'
-      policy: 'two_factor'
+      policy: 'one_factor'
 
 session:
   name: 'authelia_session'

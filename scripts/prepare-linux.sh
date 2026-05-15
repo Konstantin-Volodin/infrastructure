@@ -1,34 +1,33 @@
 #!/bin/bash
 # =============================================================================
-# setup.sh — provision void (Ubuntu Server 24.04 LTS)
+# prepare-linux.sh - provision the host (Ubuntu Server 24.04 LTS).
 #
 # usage:
-#   scp services/setup.sh user@host:~/setup.sh
-#   sudo bash ~/setup.sh
+#   sudo bash scripts/prepare-linux.sh
+#   # or via just: `just prepare`
 #
 # what this does:
 #   1.  system update
 #   2.  disable sleep & suspend
-#   3.  SSH hardening — pubkey only, no root login
-#   4.  UFW firewall — deny all except SSH, DNS, HTTP, HTTPS
-#   5.  fail2ban — ban IPs after 5 failed SSH attempts
-#   6.  network — static IPs via Netplan
-#   7.  docker + git — install
-#   8.  docker network — create shared 'net' for inter-container routing
-#   9.  pihole — free port 53 (disable systemd-resolved stub listener)
+#   3.  SSH hardening - pubkey only, no root login
+#   4.  UFW firewall - deny all except SSH, DNS, HTTP, HTTPS
+#   5.  fail2ban - ban IPs after 5 failed SSH attempts
+#   6.  network - static IPs via Netplan
+#   7.  docker + git + helper tools
+#   8.  pihole - free port 53 (disable systemd-resolved stub listener)
 # =============================================================================
 
-info() { echo "  [·] $*"; }
-ok()   { echo "  [✓] $*"; }
-warn() { echo "  [!] $*"; }
-die()  { echo "  [✗] $*" >&2; exit 1; }
-
 set -euo pipefail
-[[ $EUID -ne 0 ]] && die "run as root: sudo bash setup.sh"
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=lib/log.sh
+source "$SCRIPT_DIR/lib/log.sh"
+
+[[ $EUID -ne 0 ]] && die "run as root: sudo bash scripts/prepare-linux.sh"
 
 ## ===== system update ====================
 info "updating packages..."
-apt-get update -q 
+apt-get update -q
 apt-get upgrade -y -q
 ok "system up to date."
 
@@ -40,7 +39,7 @@ ok "sleep and suspend disabled."
 ## ===== SSH ====================
 info "hardening SSH..."
 cat > /etc/ssh/sshd_config << 'EOF'
-# managed by setup.sh
+# managed by prepare-linux.sh
 PasswordAuthentication no
 PubkeyAuthentication yes
 AuthorizedKeysFile .ssh/authorized_keys
@@ -117,13 +116,13 @@ chmod 600 /etc/netplan/50-cloud-init.yaml
 netplan apply
 ok "network configured. Ethernet: ${ETH_IP}, WiFi: ${WIFI_IP}."
 
-## ===== docker + git ====================
-info "installing docker and git..."
-apt-get install -y -q docker.io docker-compose-v2 git
+## ===== docker + git + helper tools ====================
+info "installing docker, git, and helper tools..."
+apt-get install -y -q docker.io docker-compose-v2 git gettext-base just
 systemctl enable docker
-ok "docker $(docker --version | cut -d' ' -f3 | tr -d ',') and git installed."
+ok "docker $(docker --version | cut -d' ' -f3 | tr -d ',') and helper tools installed."
 
-## ===== pihole — free port 53 ====================
+## ===== pihole - free port 53 ====================
 info "freeing port 53 for Pi-hole..."
 sed -i 's/#DNSStubListener=yes/DNSStubListener=no/' /etc/systemd/resolved.conf
 ok "systemd-resolved stub listener disabled."

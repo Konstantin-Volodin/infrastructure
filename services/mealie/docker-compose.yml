@@ -8,7 +8,7 @@ services:
         limits:
           memory: 1000M
     volumes:
-      - ${MEALIE_DATA}:/app/data/
+      - ${DATA_DIR}/mealie:/app/data/
       - ../caddy/combined-ca.crt:/etc/ssl/certs/combined-ca.crt:ro
     env_file: ../../.env
     extra_hosts:
@@ -18,6 +18,7 @@ services:
       PUID: 1000
       PGID: 1000
       TZ: ${TIMEZONE}
+      DATA_DIR: /app/data/
       THEME_LIGHT_PRIMARY: '#6366F1'
       THEME_LIGHT_ACCENT: '#6366F1'
       THEME_LIGHT_SECONDARY: '#64748B'

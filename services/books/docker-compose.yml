@@ -1,0 +1,31 @@
+services:
+  shelfmark:
+    container_name: shelfmark
+    image: ghcr.io/calibrain/shelfmark:latest
+    restart: always
+    env_file: ../../.env
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: ${TIMEZONE}
+    volumes:
+      - ${DATA_DIR}/shelfmark:/config
+      - ${DATA_DIR}/cwa-books-ingest:/cwa-book-ingest
+    networks:
+      - proxy
+
+  calibre-web-automated:
+    container_name: calibre-web-automated
+    image: crocodilestick/calibre-web-automated:latest
+    restart: always
+    env_file: ../../.env
+    environment:
+      PUID: 1000
+      PGID: 1000
+      TZ: ${TIMEZONE}
+    volumes:
+      - ${DATA_DIR}/calibre-web:/config
+      - ${DATA_DIR}/books:/calibre-library
+      - ${DATA_DIR}/cwa-books-ingest:/cwa-book-ingest
+    networks:
+      - proxy

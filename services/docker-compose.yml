@@ -16,6 +16,12 @@ include:
     env_file: ../.env
   - path: mealie/docker-compose.yml
     env_file: ../.env
+  - path: media-automation/docker-compose.yml
+    env_file: ../.env
+  - path: books/docker-compose.yml
+    env_file: ../.env
+  - path: jellyfin/docker-compose.yml
+    env_file: ../.env
 
   # CORE
   - path: caddy/docker-compose.yml
