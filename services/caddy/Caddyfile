@@ -84,11 +84,6 @@ movies.{$DOMAIN} {
 watch.{$DOMAIN} {
 	tls internal
 	import authelia
-	@websockets {
-		header Connection *Upgrade*
-		header Upgrade websocket
-	}
-	reverse_proxy @websockets jellyfin:8096
 	reverse_proxy jellyfin:8096 {
 		header_up X-Real-IP {remote_host}
 		header_down -WWW-Authenticate
