@@ -35,8 +35,7 @@ services:
       WEBUI_PORT: 8080
     volumes:
       - ${DATA_DIR}/qbittorrent:/config
-      - ${DATA_DIR}/downloads:/downloads
-      - ${DATA_DIR}/cwa-books-ingest:/cwa-book-ingest
+      - ${DATA_DIR}:/data
 
   prowlarr:
     container_name: prowlarr
