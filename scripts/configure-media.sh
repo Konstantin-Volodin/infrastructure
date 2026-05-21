@@ -1,5 +1,12 @@
 #!/bin/bash
-# This script wires up the media stack mesh automatically.
+#
+# Wires up the media stack mesh.
+#
+# - qBittorrent: books / tv / movies categories
+# - Sonarr/Radarr: download client + root folder
+# - Prowlarr: full sync to Sonarr & Radarr
+#
+# Idempotent. Re-running converges to the same state.
 
 set -euo pipefail
 
@@ -12,121 +19,128 @@ gcurl() { docker run --rm --network "container:gluetun" "$CURL_IMAGE" -fsS --max
 
 wait_http() {
     for _ in {1..60}; do
-        gcurl -o /dev/null "$1" 2>/dev/null && { ok "$2 is ready."; return 0; }
-        sleep 2
+        gcurl -o /dev/null "$1" 2>/dev/null && { ok "$2 ready."; return; } || sleep 2
     done
-    warn "$2 not reachable after 120s - skipping."
-    return 1
+    warn "$2 unreachable after 120s."; return 1
 }
 
 api_key() {
     local f="${DATA_DIR}/$1/config.xml"
     for _ in {1..30}; do
-        [ -f "$f" ] && grep -q '<ApiKey>' "$f" && { sed -n 's:.*<ApiKey>\(.*\)</ApiKey>.*:\1:p' "$f"; return 0; }
-        sleep 2
+        [ -f "$f" ] && grep -q '<ApiKey>' "$f" && { sed -n 's:.*<ApiKey>\(.*\)</ApiKey>.*:\1:p' "$f"; return; } || sleep 2
     done
     return 1
 }
 
+
 configure_qbittorrent() {
     wait_http "http://localhost:8080/api/v2/app/version" "qBittorrent" || return 0
+
+    local base="http://localhost:8080/api/v2/torrents"
     set_category() {
-        gcurl -X POST "http://localhost:8080/api/v2/torrents/createCategory" \
-            --data-urlencode "category=$1" --data-urlencode "savePath=$2" >/dev/null 2>&1 || \
-        gcurl -X POST "http://localhost:8080/api/v2/torrents/editCategory" \
-            --data-urlencode "category=$1" --data-urlencode "savePath=$2" >/dev/null 2>&1
-        ok "qBittorrent: '$1' → $2"
+        local args=(--data-urlencode "category=$1" --data-urlencode "savePath=$2")
+        if   gcurl -X POST "${base}/createCategory" "${args[@]}" >/dev/null 2>&1 \
+          || gcurl -X POST "${base}/editCategory"   "${args[@]}" >/dev/null 2>&1
+        then ok   "qBittorrent: '$1' → $2"
+        else warn "qBittorrent: '$1' → $2 failed."
+        fi
     }
+
     set_category books  /data/cwa-books-ingest
     set_category tv     /data/downloads/tv
     set_category movies /data/downloads/movies
 }
 
-# $1=Label $2=port $3=configDir $4=qbitCategory $5=rootFolder
+DC_BODY_TEMPLATE='{
+  "enable": true, "protocol": "torrent", "priority": 1,
+  "name": "qBittorrent", "implementation": "QBittorrent",
+  "configContract": "QBittorrentSettings",
+  "fields": [
+    {"name": "host",     "value": "localhost"},
+    {"name": "port",     "value": 8080},
+    {"name": "category", "value": "__CAT__"},
+    {"name": "useSsl",   "value": false}
+  ]
+}'
 configure_arr() {
-    local label=$1 port=$2 cfg=$3 cat=$4 root=$5 key base
+    local label=$1 port=$2 cfg=$3 cat=$4 root=$5
     wait_http "http://localhost:${port}/ping" "$label" || return 0
 
-    if ! key=$(api_key "$cfg"); then
-        warn "$label API key not found in ${DATA_DIR}/${cfg}/config.xml — skipping."
-        return 0
-    fi
-    base="http://localhost:${port}/api/v3"
+    local key=$(api_key "$cfg")
+    local base="http://localhost:${port}/api/v3"
 
-    if gcurl -H "X-Api-Key: $key" "${base}/downloadclient" 2>/dev/null \
-        | grep -q '"name":"qBittorrent"'; then
-        ok "$label download client already configured."
-    elif gcurl -H "X-Api-Key: $key" -H "Content-Type: application/json" \
-        -X POST "${base}/downloadclient" -d "{
-          \"enable\":true,\"protocol\":\"torrent\",\"priority\":1,
-          \"name\":\"qBittorrent\",\"implementation\":\"QBittorrent\",
-          \"configContract\":\"QBittorrentSettings\",
-          \"fields\":[
-            {\"name\":\"host\",\"value\":\"localhost\"},
-            {\"name\":\"port\",\"value\":8080},
-            {\"name\":\"category\",\"value\":\"${cat}\"},
-            {\"name\":\"useSsl\",\"value\":false}
-          ]}" >/dev/null 2>&1; then
-        ok "$label → qBittorrent download client added (category '${cat}')."
-    else
-        warn "$label download client POST failed (API shape changed?)."
-    fi
+    local dc_url="${base}/downloadclient"
+    local dc_marker='"name":"qBittorrent"'
+    local dc_body="${DC_BODY_TEMPLATE//__CAT__/$cat}"
+    local dc_desc="qBittorrent download client (category '${cat}')"
 
-    if gcurl -H "X-Api-Key: $key" "${base}/rootfolder" 2>/dev/null \
-        | grep -q "\"path\":\"${root}\""; then
-        ok "$label root folder already configured."
-    elif gcurl -H "X-Api-Key: $key" -H "Content-Type: application/json" \
-        -X POST "${base}/rootfolder" -d "{\"path\":\"${root}\"}" >/dev/null 2>&1; then
-        ok "$label → root folder ${root} added."
-    else
-        warn "$label root folder POST failed (path missing on disk?)."
-    fi
-}
+    local rf_url="${base}/rootfolder"
+    local rf_marker="\"path\":\"${root}\""
+    local rf_body="{\"path\":\"${root}\"}"
+    local rf_desc="root folder ${root}"
 
-configure_prowlarr() {
-    wait_http "http://localhost:9696/ping" "Prowlarr" || return 0
-
-    local pkey skey rkey apps
-    if ! pkey=$(api_key prowlarr); then
-        warn "Prowlarr API key not found — skipping app links."
-        return 0
-    fi
-    skey=$(api_key sonarr || true)
-    rkey=$(api_key radarr || true)
-    apps=$(gcurl -H "X-Api-Key: $pkey" \
-        "http://localhost:9696/api/v1/applications" 2>/dev/null || echo '[]')
-
-    # $1=name $2=implementation $3=baseUrl $4=appApiKey $5=syncCategories
-    link_app() {
-        if echo "$apps" | grep -q "\"name\":\"$1\""; then
-            ok "Prowlarr: $1 already linked."
-            return 0
-        fi
-        if [ -z "$4" ]; then
-            warn "Prowlarr: $1 API key unavailable — skipping link."
-            return 0
-        fi
-        if gcurl -H "X-Api-Key: $pkey" -H "Content-Type: application/json" \
-            -X POST "http://localhost:9696/api/v1/applications" -d "{
-              \"name\":\"$1\",\"implementation\":\"$2\",
-              \"configContract\":\"${2}Settings\",\"syncLevel\":\"fullSync\",
-              \"fields\":[
-                {\"name\":\"prowlarrUrl\",\"value\":\"http://localhost:9696\"},
-                {\"name\":\"baseUrl\",\"value\":\"$3\"},
-                {\"name\":\"apiKey\",\"value\":\"$4\"},
-                {\"name\":\"syncCategories\",\"value\":[$5]}
-              ]}" >/dev/null 2>&1; then
-            ok "Prowlarr → $1 linked (full sync)."
-        else
-            warn "Prowlarr: linking $1 failed (API shape changed?)."
+    ensure() {
+        if   gcurl -H "X-Api-Key: $key" "$1" 2>/dev/null | grep -q "$2"
+        then ok   "$label $4 already configured."
+        elif gcurl -H "X-Api-Key: $key" -H "Content-Type: application/json" \
+                -X POST "$1" -d "$3" >/dev/null 2>&1
+        then ok   "$label → $4 added."
+        else warn "$label $4 POST failed."
         fi
     }
 
-    link_app Sonarr Sonarr "http://localhost:8989" "$skey" \
-        "5000,5010,5020,5030,5040,5045,5050"
-    link_app Radarr Radarr "http://localhost:7878" "$rkey" \
-        "2000,2010,2020,2030,2040,2045,2050,2060"
+    ensure "$dc_url" "$dc_marker" "$dc_body" "$dc_desc"
+    ensure "$rf_url" "$rf_marker" "$rf_body" "$rf_desc"
 }
+
+APP_BODY_TEMPLATE='{
+  "name": "__APP__", "implementation": "__APP__",
+  "configContract": "__APP__Settings", "syncLevel": "fullSync",
+  "fields": [
+    {"name": "prowlarrUrl",    "value": "http://localhost:9696"},
+    {"name": "baseUrl",        "value": "__BASE_URL__"},
+    {"name": "apiKey",         "value": "__API_KEY__"},
+    {"name": "syncCategories", "value": [__CATEGORIES__]}
+  ]
+}'
+configure_prowlarr() {
+    wait_http "http://localhost:9696/ping" "Prowlarr" || return 0
+
+    local pkey=$(api_key prowlarr)
+    local apps_url="http://localhost:9696/api/v1/applications"
+    local apps=$(gcurl -H "X-Api-Key: $pkey" "$apps_url" 2>/dev/null)
+
+    local son_name="Sonarr"
+    local son_url="http://localhost:8989"
+    local son_key=$(api_key sonarr)
+    local son_cats="5000,5010,5020,5030,5040,5045,5050"
+
+    local rad_name="Radarr"
+    local rad_url="http://localhost:7878"
+    local rad_key=$(api_key radarr)
+    local rad_cats="2000,2010,2020,2030,2040,2045,2050,2060"
+
+    link_app() {
+        local name=$1 url=$2 key=$3 cats=$4
+        local body="$APP_BODY_TEMPLATE"
+        body="${body//__APP__/$name}"
+        body="${body//__BASE_URL__/$url}"
+        body="${body//__API_KEY__/$key}"
+        body="${body//__CATEGORIES__/$cats}"
+
+        if   echo "$apps" | grep -q "\"name\":\"$name\""
+        then ok   "Prowlarr: $name already linked."
+        elif gcurl -H "X-Api-Key: $pkey" -H "Content-Type: application/json" \
+                -X POST "$apps_url" -d "$body" >/dev/null 2>&1
+        then ok   "Prowlarr → $name linked (full sync)."
+        else warn "Prowlarr: linking $name failed."
+        fi
+    }
+
+    link_app "$son_name" "$son_url" "$son_key" "$son_cats"
+    link_app "$rad_name" "$rad_url" "$rad_key" "$rad_cats"
+}
+
 
 main() {
     require_root
