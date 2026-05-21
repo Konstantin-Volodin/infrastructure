@@ -23,12 +23,12 @@ just up         # start services
 
 | Command                  | What it does                              | Script                                                         |
 |--------------------------|-------------------------------------------|----------------------------------------------------------------|
-| `just`                   | show all available commands               | [justfile](justfile)                                           | 
-| `just prepare`           | linux setup                               | [scripts/prepare-linux.sh](scripts/prepare-linux.sh)           |
-| `just validate`          | validate docker compose files             | [scripts/validate.sh](scripts/validate.sh)              |
-| `just env`               | sync .env file                            | [scripts/bootstrap-services.sh](scripts/bootstrap-services.sh) |
+| `just`                   | show all available commands               | [justfile](justfile)                                           |
+| `just prepare`           | linux setup                               | [scripts/prepare.sh](scripts/prepare.sh)                       |
+| `just env`               | sync .env file                            | [scripts/env.sh](scripts/env.sh)                               |
+| `just media`             | wire up media stack mesh                  | [scripts/media.sh](scripts/media.sh)                           |
+| `just validate`          | validate docker compose files             | [scripts/validate.sh](scripts/validate.sh)                     |
 | `just up/down/restart`   | service management                        |                                                                |
-| `just restart`           | restart services                          |                                                                |
 | `just logs [svc]`        | logs for the stack, or one service        |                                                                |
 | `just ps`                | show running services                     |                                                                |
 | `just pull`              | pull latest images                        |                                                                |
@@ -57,34 +57,15 @@ just up         # start services
 2. set: `PROTONVPN_OPENVPN_USER` / `PROTONVPN_OPENVPN_PASSWORD` in `.env`
 3. verify: `sudo docker exec gluetun wget -qO- ifconfig.me` (should return a Canadian IP)
 
-**qBittorrent** - download client
-1. launch qBittorrent at `https://downloads.voxlab.home`
-2. login with `admin` / `sudo docker logs qbittorrent | grep "password"` for the generated password. 
-3. let docker containers login: Settings → Web UI → Authentication → enable "Bypass authentication for clients in whitelisted IP subnets" → add `172.0.0.0/8`
-4. `books` category: right-click Categories → Add → name `books`, save path `/data/cwa-books-ingest`; Options → Downloads → set torrent management mode to **Automatic**.
-5. `tv` category: right-click Categories → Add → name `tv`, save path `/data/downloads/tv`
-6. `movies` category: right-click Categories → Add → name `movies`, save path `/data/downloads/movies`
+**Media stack** - the mesh is wired automatically by `just up` (re-run any time
+with `just media`): qBittorrent `books`/`tv`/`movies` categories + localhost
+auth bypass, Sonarr/Radarr download client + root folders, and Prowlarr →
+Sonarr/Radarr full sync. What's left is the content/identity choices it can't
+make for you:
 
-**Prowlarr** - torrent indexer management
-1. launch Prowlarr at `https://indexer.voxlab.home`
-2. Indexers → Add. Recommended public indexers: The Pirate Bay, LimeTorrents, YTS (movies), Nyaa (anime).
-3. tv: Settings → Apps → Add → Sonarr (Prowlarr Server: `http://gluetun:9696`, Sonarr Server: `http://gluetun:8989`, API key from Sonarr → Settings → General).
-4. movies: Settings → Apps → Add → Radarr (Prowlarr Server: `http://gluetun:9696`, Radarr Server: `http://gluetun:7878`, API key from Radarr → Settings → General).
-
-**Shelfmark** -
-- Settings → Prowlarr (server: `http://gluetun:9696`, API key from Prowlarr → Settings → General)
-- Settings → qBittorrent (host: `gluetun`, port: `8080`, category: `books`, destination: `/data/cwa-books-ingest`)
-- Settings → Advanced → download path: `/cwa-book-ingest` (otherwise files are lost inside the container)
-
-**Calibre-Web-Automated** - login with `admin` / `admin123`, then:
-- Admin → Basic Configuration → enable **Allow Reverse Proxy Authentication** → set header to `Remote-User`
-- Create a user matching your Authelia username
-
-**Sonarr (tv)** -
-- Settings → Download Clients → Add → qBittorrent (host `gluetun`, port `8080`, category `tv`)
-- Settings → Media Management → Root Folder → `/data/tv`
-
-**Radarr (movies)** - same as Sonarr, but category `movies`, root folder `/data/movies`
+- **Prowlarr** (`https://indexer.voxlab.home`) → Indexers → Add. Suggested public: The Pirate Bay, LimeTorrents, YTS (movies), Nyaa (anime).
+- **Shelfmark** → Settings → Prowlarr (`http://gluetun:9696`, key from Prowlarr → Settings → General); qBittorrent (host `gluetun`, port `8080`, category `books`); Advanced → download path `/cwa-book-ingest`.
+- **Calibre-Web-Automated** - login `admin` / `admin123`, then Admin → Basic Configuration → enable **Allow Reverse Proxy Authentication** (header `Remote-User`); create a user matching your Authelia username.
 
 **Jellyfin** - first launch at `https://watch.voxlab.home`:
 - Complete the setup wizard (create admin user)

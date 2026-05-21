@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# bootstrap-services.sh
+# env.sh
 #   - syncs .env from .env.example and resolves DATA_DIR
 #   - generates secrets and prompts for missing credentials
 #   - bootstraps Authelia (admin password hash + OIDC keys)
@@ -10,7 +10,7 @@
 #   - creates shared Docker networks
 #
 # usage:
-#   sudo bash scripts/bootstrap-services.sh
+#   sudo bash scripts/env.sh
 # =============================================================================
 
 set -euo pipefail
