@@ -1,41 +1,102 @@
 #!/bin/bash
 # =============================================================================
 # env.sh
-#   - syncs .env from .env.example and resolves DATA_DIR
-#   - generates secrets and prompts for missing credentials
-#   - bootstraps Authelia (admin password hash + OIDC keys)
-#   - generates service configs and the internal CA bundle
-#   - prepares data directories with the right ownership
-#   - configures qBittorrent auth bypass
-#   - creates shared Docker networks
+#   syncs .env, generates secrets, bootstraps authelia, prepares the host
+#   for `docker compose up`.
 #
 # usage:
 #   sudo bash scripts/env.sh
 # =============================================================================
 
 set -euo pipefail
+source "$SCRIPT_DIR/lib/log.sh"
+source "$SCRIPT_DIR/lib/env.sh"
+source "$SCRIPT_DIR/lib/runtime.sh"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-# shellcheck source=lib/log.sh
-source "$SCRIPT_DIR/lib/log.sh"
-# shellcheck source=lib/env.sh
-source "$SCRIPT_DIR/lib/env.sh"
-# shellcheck source=lib/runtime.sh
-source "$SCRIPT_DIR/lib/runtime.sh"
 
-AUTHELIA_BOOTSTRAPPED=0
-AUTHELIA_INITIAL_ADMIN_PASSWORD=""
+ENV_EXAMPLE=".env.example"
 AUTHELIA_USERS_DB="services/authelia/config/users_database.yml"
 AUTHELIA_OIDC_KEY="services/authelia/secrets/oidc.jwks.key"
+AUTHELIA_BANNER='
+  ==============================================================
+    Authelia initial admin password (record this NOW —
+    plaintext is not stored on disk):
+
+      user:     vox
+      password: __PASSWORD__
+
+    Hash applied in:
+      services/authelia/config/users_database.yml
+    Change the password from the Authelia UI after first login.
+  =============================================================='
+
+
+## ===== env helpers =====
+
+env_get() { grep "^$1=" "$ENV_FILE" | head -n1 | cut -d= -f2- | tr -d '\r'; }
+
+env_has_value() { grep -q "^$1=.\+" "$ENV_FILE" ; }
+
+gen_secret() {
+    env_has_value "$1" && return
+    env_set "$1" "$(openssl rand -hex 64 | tr -d '\n')"
+    ok "generated $1"
+}
+
+prompt_credential() {
+    local key="$1" prompt="$2" secret="${3:-false}"
+    env_has_value "$key" && return
+    local value
+    if [ "$secret" = true ]; then
+        read -rsp "  ${prompt}: " value; echo
+    else
+        read -rp "  ${prompt}: " value
+    fi
+    env_set "$key" "$value"
+    ok "$key set."
+}
+
+sync_env_from_example() {
+    if [ ! -f "$ENV_FILE" ]; then
+        info "creating ${ENV_FILE} from ${ENV_EXAMPLE}..."
+        cp "$ENV_EXAMPLE" "$ENV_FILE"
+        ok "${ENV_FILE} created."
+        return
+    fi
+    info "syncing new variables from ${ENV_EXAMPLE}..."
+    local added=0
+    while IFS= read -r line; do
+        local key="${line%%=*}"
+        [ -z "$key" ]            && continue
+        [[ "$key" == \#* ]]      && continue
+        [ "$key" = "$line" ]     && continue
+        grep -q "^${key}=" "$ENV_FILE" && continue
+        echo "$line" >> "$ENV_FILE"
+        added=$((added+1))
+    done < "$ENV_EXAMPLE"
+    ok "${ENV_FILE} synced (${added} new var(s))."
+}
+
+resolve_env_paths() {
+    info "resolving storage paths..."
+    local key val
+    for key in "$@"; do
+        val=$(env_get "$key")
+        [[ "$val" == ./* ]] && env_set "$key" "$(realpath -m "$val")"
+    done
+    ok "storage paths resolved."
+}
+
+
+## ===== steps =====
 
 prepare_env() {
     info "preparing environment..."
     sync_env_from_example
 
-    if ! env_has_value DATA_DIR; then
-        env_set DATA_DIR "./data"
-    fi
+    env_has_value DATA_DIR || env_set DATA_DIR "./data"
     resolve_env_paths DATA_DIR
 
     HOST_IP=$(hostname -I | awk '{print $1}')
@@ -64,92 +125,84 @@ generate_secrets() {
     gen_secret MEALIE_OIDC_SECRET
 
     info "checking user credentials..."
-    prompt_credential PROTONVPN_OPENVPN_USER \
-        "ProtonVPN OpenVPN username (from account.protonvpn.com/account#openvpn)"
-    prompt_credential PROTONVPN_OPENVPN_PASSWORD \
-        "ProtonVPN OpenVPN password" true
+    prompt_credential PROTONVPN_OPENVPN_USER "ProtonVPN OpenVPN username (from account.protonvpn.com/account#openvpn)"
+    prompt_credential PROTONVPN_OPENVPN_PASSWORD "ProtonVPN OpenVPN password" true
+}
+
+ensure_admin_password() {
+    local container="$1"
+    grep -Eq '^    password:[[:space:]]*[^[:space:]]+' "$AUTHELIA_USERS_DB" && {
+        ok "authelia admin password hash already exists."
+        return
+    }
+
+    # Plaintext is held in this shell only; it never lands on disk.
+    local password hash
+    password=$(openssl rand -hex 24)
+    hash=$(docker exec "$container" authelia crypto hash generate \
+            --config /config/configuration.yml --password "$password" \
+        | grep '^Digest:' | sed 's/^Digest: //')
+    [ -n "$hash" ] || die "failed to generate authelia admin password hash"
+
+    sed -i "s|^    password:.*|    password: '${hash}'|" "$AUTHELIA_USERS_DB"
+    ok "admin password hash written."
+
+    printf '%s\n' "${AUTHELIA_BANNER//__PASSWORD__/$password}"
+}
+
+ensure_oidc_keys() {
+    local container="$1"
+    [ -f "$AUTHELIA_OIDC_KEY" ] && {
+        ok "authelia OIDC keys already exist."
+        return
+    }
+
+    docker exec "$container" authelia crypto pair rsa generate --directory /config/secrets > /dev/null
+    mv services/authelia/secrets/private.pem services/authelia/secrets/oidc.jwks.key
+    mv services/authelia/secrets/public.pem  services/authelia/secrets/oidc.jwks.pub
+    ok "authelia OIDC keys generated."
 }
 
 setup_authelia() {
-    local needs_admin_password=0
-    local needs_oidc_keys=0
-    local authelia_container
-    local admin_hash
-
-    info "checking authelia bootstrap state..."
     [ -f "$AUTHELIA_USERS_DB" ] || die "missing $AUTHELIA_USERS_DB"
 
-    if ! grep -Eq '^    password:[[:space:]]*[^[:space:]]+' "$AUTHELIA_USERS_DB"; then
-        needs_admin_password=1
-    fi
-    [ ! -f "$AUTHELIA_OIDC_KEY" ] && needs_oidc_keys=1
-
-    if [ "$needs_admin_password" = 0 ] && [ "$needs_oidc_keys" = 0 ]; then
-        ok "authelia admin password and OIDC keys already exist, skipping bootstrap."
-        return 0
+    if grep -Eq '^    password:[[:space:]]*[^[:space:]]+' "$AUTHELIA_USERS_DB" && [ -f "$AUTHELIA_OIDC_KEY" ]; then
+        ok "authelia already bootstrapped."
+        return
     fi
 
     info "bootstrapping authelia..."
     mkdir -p services/authelia/secrets
 
-    authelia_container="temp-authelia-$$"
+    local container="temp-authelia-$$"
     docker run -d --rm \
         -v "${PWD}/services/authelia/config/configuration.yml:/config/configuration.yml" \
         -v "${PWD}/services/authelia/secrets:/config/secrets" \
-        --name "$authelia_container" \
+        --name "$container" \
         authelia/authelia:latest sleep infinity > /dev/null
+    trap "docker stop $container >/dev/null 2>&1 || true" EXIT
 
-    cleanup_authelia_container() {
-        docker stop "$authelia_container" > /dev/null 2>&1 || true
-    }
-    trap cleanup_authelia_container EXIT
-
-    if [ "$needs_admin_password" = 1 ]; then
-        # The plaintext is held in this shell only; it never lands on disk.
-        AUTHELIA_INITIAL_ADMIN_PASSWORD=$(openssl rand -hex 24)
-        admin_hash=$(docker exec "$authelia_container" authelia crypto hash generate \
-            --config "/config/configuration.yml" \
-            --password "$AUTHELIA_INITIAL_ADMIN_PASSWORD" \
-            | awk -F'Digest: ' '/Digest: / { print $2; exit }')
-        [ -n "$admin_hash" ] || die "failed to generate authelia admin password hash"
-        sed -i "s|^    password:.*|    password: '${admin_hash}'|" "$AUTHELIA_USERS_DB"
-        ok "admin password hash written."
-        AUTHELIA_BOOTSTRAPPED=1
-    else
-        ok "authelia admin password hash already exists."
-    fi
-
-    if [ "$needs_oidc_keys" = 1 ]; then
-        docker exec "$authelia_container" authelia crypto pair rsa generate \
-            --directory /config/secrets > /dev/null
-        mv services/authelia/secrets/private.pem services/authelia/secrets/oidc.jwks.key
-        mv services/authelia/secrets/public.pem services/authelia/secrets/oidc.jwks.pub
-        ok "authelia OIDC keys generated."
-    else
-        ok "authelia OIDC keys already exist."
-    fi
-
-    cleanup_authelia_container
-    trap - EXIT
+    ensure_admin_password "$container"
+    ensure_oidc_keys     "$container"
 }
 
-generate_service_configs() {
+generate_immich_config() {
     info "generating immich config..."
     envsubst < services/immich/config/immich.json.tmpl > services/immich/config/immich.json
     ok "immich config generated."
 }
 
-generate_ca_bundles() {
+generate_ca_bundle() {
     if [ -f services/caddy/combined-ca.crt ]; then
         ok "combined CA bundle already exists."
-        return 0
+        return
     fi
 
     info "generating internal CA cert..."
     mkdir -p services/caddy/pki
     openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes \
         -keyout services/caddy/pki/internal-ca.key \
-        -out services/caddy/pki/internal-ca.crt \
+        -out    services/caddy/pki/internal-ca.crt \
         -subj "/CN=Void Internal CA"
     cat /etc/ssl/certs/ca-certificates.crt services/caddy/pki/internal-ca.crt \
         > services/caddy/combined-ca.crt
@@ -157,12 +210,8 @@ generate_ca_bundles() {
 }
 
 create_data_directories() {
-    local dirs
-    local dir
-
     info "ensuring data directories exist with correct ownership..."
-    # Dirs whose contents are managed by the host user (vox).
-    dirs=(
+    local dirs=(
         "$DATA_DIR/downloads"
         "$DATA_DIR/qbittorrent"
         "$DATA_DIR/prowlarr"
@@ -179,16 +228,14 @@ create_data_directories() {
         "$DATA_DIR/immich-uploads"
         "$DATA_DIR/mealie"
     )
-
+    local dir
     for dir in "${dirs[@]}"; do
-        if [ ! -d "$dir" ]; then
-            mkdir -p "$dir"
-            chown "$REAL_UID:$REAL_GID" "$dir"
-        fi
+        [ -d "$dir" ] && continue
+        mkdir -p "$dir"
+        chown "$REAL_UID:$REAL_GID" "$dir"
     done
 
-    # Container-managed dirs: create only, never chown — the container's own
-    # user (e.g. postgres UID 999) owns the contents.
+    # Container-managed: postgres owns the contents as UID 999 — never chown.
     mkdir -p "$DATA_DIR/immich-postgres"
 
     ok "data directories ready."
@@ -206,7 +253,7 @@ configure_qbittorrent() {
         printf '[Preferences]\nWebUI\\LocalHostAuth=false\n' > "$qbit_conf"
         chown "$REAL_UID:$REAL_GID" "$qbit_conf"
     elif grep -q 'WebUI\\LocalHostAuth=' "$qbit_conf"; then
-        sed -i 's/WebUI\\LocalHostAuth=.*/WebUI\\LocalHostAuth=false/' "$qbit_conf"
+        sed -i 's|WebUI\\LocalHostAuth=.*|WebUI\\LocalHostAuth=false|' "$qbit_conf"
     else
         sed -i '/^\[Preferences\]/a WebUI\\LocalHostAuth=false' "$qbit_conf"
     fi
@@ -218,39 +265,30 @@ create_docker_network() {
     ok "proxy network ready."
 }
 
-print_authelia_banner() {
-    [ "$AUTHELIA_BOOTSTRAPPED" = 1 ] || return 0
-    echo
-    echo "  =============================================================="
-    echo "    Authelia initial admin password (record this NOW —"
-    echo "    plaintext is not stored on disk):"
-    echo
-    echo "      user:     vox"
-    echo "      password: $AUTHELIA_INITIAL_ADMIN_PASSWORD"
-    echo
-    echo "    Hash applied in:"
-    echo "      services/authelia/config/users_database.yml"
-    echo "    Change the password from the Authelia UI after first login."
-    echo "  =============================================================="
-    echo
-}
 
 main() {
     require_root
     cd "$ROOT_DIR"
 
+    # ===== identity =====
     detect_real_user
+
+    # ===== env + secrets =====
     prepare_env
     generate_secrets
     setup_authelia
-
     load_env_exports
-    generate_service_configs
-    generate_ca_bundles
+
+    # ===== configs =====
+    generate_immich_config
+    generate_ca_bundle
+
+    # ===== filesystem =====
     create_data_directories
     configure_qbittorrent
+
+    # ===== networking =====
     create_docker_network
-    print_authelia_banner
 }
 
 main "$@"
