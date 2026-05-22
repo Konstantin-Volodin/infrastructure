@@ -23,7 +23,7 @@ chown_git_tracked_files() {
 }
 
 load_env_exports() {
-    [ -f .env ] || die "missing .env; run scripts/bootstrap-services.sh first"
+    [ -f .env ] || die "missing .env; run scripts/env.sh first"
     set -a
     # shellcheck source=../../.env
     source .env
