@@ -4,6 +4,7 @@ services:
   authelia:
     container_name: authelia
     image: authelia/authelia:latest
+    user: "1000:1000"
     restart: unless-stopped
     environment:
       - X_AUTHELIA_CONFIG_FILTERS=template
