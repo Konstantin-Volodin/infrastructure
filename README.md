@@ -102,18 +102,25 @@ make for you:
 - Containers: Docker Compose per service with shared `proxy` network
 
 ## Future plans
-- google drive: nextcloud ? 
-- note taking: joplin server ?
-- code repository hosting: gitea ?
-- notifications:  
-- monitoring: Grafana + Prometheus for resource usage and service health
-- password manager: bitwarden RS (vaultwarden)
-- backup: restic to back up important data to an external drive or cloud storage
-- branding: coherent design across services (custom Caddy error pages, unified UI theme where possible)
-- documentation
-- media node: abyss NAS, dedicated to media services (Jellyfin, Sonarr/Radarr, qBittorrent)
-- AI node: convert core to synapse, AI services.
-- home automation: Home Assistant (needs Zigbee/Z-wave USB stick) (need to buy a house first ;| )
+
+**Services to add**
+- Google Drive alternative: Nextcloud?
+- Note taking: Joplin Server?
+- Code hosting: Gitea?
+- Password manager: Vaultwarden
+- Notifications: (tool TBD - ntfy / Gotify?)
+
+**Platform & ops**
+- User management: unify accounts across services (Authelia + service-specific)
+- Monitoring: Grafana + Prometheus (resource usage, service health)
+- Backup: restic → external drive or cloud
+- Branding: coherent design across services (custom Caddy error pages, unified UI theme) - _in progress_
+- Documentation
+
+**Hardware / topology**
+- Media node: abyss NAS dedicated to media services (Jellyfin, Sonarr/Radarr, qBittorrent)
+- AI node: convert core → synapse for AI services
+- Home automation: Home Assistant (needs Zigbee/Z-Wave USB stick - need to buy a house first ;| )
 
 
 ## Hardware
@@ -141,3 +148,20 @@ make for you:
 
 - RAM: 8 GB for current stack; media services may need 16 GB+
 - Storage: 256 GB tight for media, SATA expansion available
+
+## 🤖 Code style
+
+### Mindset
+
+- **Read it before you ship it.** Correctness is the floor - does the eye glide or stumble?
+- **Prefer deletion.** Every change should leave the file easier to read; if a refactor grows it, question the approach.
+- **Trust the system.** No defensive guards for cases that won't fire - calm code, not anxious code.
+- **Compact over conventional.** Style guides describe defaults - choose better when the result reads better.
+
+### Shape
+
+- **Separate data from logic.** Declare named values at the top; operate on them below.
+- **Mirror the shape of the work.** Two operations doing the same thing should *look* the same - matching prefixes, aligned call sites, parallel structure.
+- **Templates over inline soup.** Multi-line JSON, SQL, anything with quoting - extract to a top-level constant with placeholders.
+- **Comments only when the code can't speak.** - the signature lives in the destructure, not a drifting comment.
+- **Breathing room.** Blank lines between conceptual sections - the eye uses whitespace to navigate.
