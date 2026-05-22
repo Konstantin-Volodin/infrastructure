@@ -22,6 +22,8 @@ include:
     env_file: ../.env
   - path: jellyfin/docker-compose.yml
     env_file: ../.env
+  - path: budget/docker-compose.yml
+    env_file: ../.env
 
   # CORE
   - path: caddy/docker-compose.yml

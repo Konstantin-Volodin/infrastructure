@@ -23,6 +23,12 @@
         subtitle: Jellyfin
         server: my-docker
         container: jellyfin
+    - Budget:
+        icon: actual-budget
+        href: https://budget.{{HOMEPAGE_VAR_DOMAIN}}
+        subtitle: Actual Budget
+        server: my-docker
+        container: actual_budget
 
 - Core:
     - DNS:

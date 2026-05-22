@@ -102,3 +102,16 @@ identity_providers:
           - 'email'
           - 'profile'
         userinfo_signed_response_alg: 'none'
+
+      - client_id: 'budget'
+        client_name: 'Actual Budget'
+        client_secret: '{{ env "ACTUAL_OIDC_SECRET" }}'
+        token_endpoint_auth_method: 'client_secret_basic'
+        consent_mode: 'implicit'
+        redirect_uris:
+          - 'https://budget.{{ env "DOMAIN" }}/openid/callback'
+        scopes:
+          - 'openid'
+          - 'email'
+          - 'profile'
+        userinfo_signed_response_alg: 'none'

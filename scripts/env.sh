@@ -123,6 +123,7 @@ generate_secrets() {
     gen_secret AUTHELIA_OIDC_HMAC_SECRET
     gen_secret IMMICH_OIDC_SECRET
     gen_secret MEALIE_OIDC_SECRET
+    gen_secret ACTUAL_OIDC_SECRET
 
     info "checking user credentials..."
     prompt_credential PROTONVPN_OPENVPN_USER "ProtonVPN OpenVPN username (from account.protonvpn.com/account#openvpn)"
@@ -227,6 +228,7 @@ create_data_directories() {
         "$DATA_DIR/calibre-web"
         "$DATA_DIR/immich-uploads"
         "$DATA_DIR/mealie"
+        "$DATA_DIR/budget"
     )
     local dir
     for dir in "${dirs[@]}"; do

@@ -72,11 +72,12 @@ just up         # start services
 | Jellyfin                 | `https://watch.voxlab.home/`     | Installed |
 | Prowlarr                 | `https://indexer.voxlab.home/`   | Installed |
 | qBittorrent + Gluetun    | `https://downloads.voxlab.home/` | Installed |
+| Actual Budget            | `https://budget.voxlab.home`     | Installed |
 
 ### Architecture
 
 - Reverse proxy: Caddy terminates TLS (internal CA), routes by hostname
-- Auth: Authelia forward auth for all routes + OIDC for Immich and Mealie
+- Auth: Authelia forward auth for all routes + OIDC for Immich, Mealie, and Actual Budget
 - DNS: Pi-hole serves wildcard `*.voxlab.home` to host IP
 - Remote access: Tailscale VPN + Pi-hole DNS
 - Containers: Docker Compose per service with shared `proxy` network

@@ -33,6 +33,11 @@ recipes.{$DOMAIN} {
 	reverse_proxy mealie:9000
 }
 
+budget.{$DOMAIN} {
+	tls internal
+	reverse_proxy actual_budget:5006
+}
+
 dns.{$DOMAIN} {
 	tls internal
 	import authelia
