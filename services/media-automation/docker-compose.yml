@@ -17,6 +17,14 @@ services:
       SERVER_COUNTRIES: ${VPN_SERVER_COUNTRIES:-Canada}
       FREE_ONLY: ${PROTONVPN_FREE_ONLY:-off}
       VPN_PORT_FORWARDING: on
+      VPN_PORT_FORWARDING_UP_COMMAND: >-
+        /bin/sh -c 'wget -O- -nv --retry-connrefused
+        --post-data "json={\"listen_port\":{{PORT}},\"random_port\":false,\"upnp\":false}"
+        http://127.0.0.1:8080/api/v2/app/setPreferences'
+      VPN_PORT_FORWARDING_DOWN_COMMAND: >-
+        /bin/sh -c 'wget -O- -nv --retry-connrefused
+        --post-data "json={\"listen_port\":0}"
+        http://127.0.0.1:8080/api/v2/app/setPreferences'
     networks:
       - proxy
 
@@ -33,6 +41,9 @@ services:
       PGID: 1000
       TZ: ${TIMEZONE}
       WEBUI_PORT: 8080
+      # VueTorrent — modern WebUI, installed via LSIO docker-mod
+      # https://github.com/gabe565/linuxserver-mod-vuetorrent
+      DOCKER_MODS: ghcr.io/gabe565/linuxserver-mod-vuetorrent
     volumes:
       - ${DATA_DIR}/qbittorrent:/config
       - ${DATA_DIR}:/data

@@ -2,44 +2,34 @@
 # Run `just` (no args) to list targets. Most targets need sudo on the host.
 
 set shell := ["bash", "-eu", "-o", "pipefail", "-c"]
-
 compose := "docker compose -f services/docker-compose.yml --env-file .env"
 
-# Show available targets.
 default:
     @just --list
 
-# Provision the host (system updates, SSH, firewall, Docker, etc.).
+## ===== setup =====
 prepare:
-    sudo bash scripts/prepare-linux.sh
-
-# Bootstrap env, secrets, Authelia, configs, CA bundles, data dirs, and networks.
+    sudo bash scripts/prepare.sh
 env:
-    sudo bash scripts/bootstrap-services.sh
+    sudo bash scripts/env.sh
+media:
+    sudo bash scripts/media.sh
 
-# Bring the stack up and configure service-level post-start bits.
+## ===== lifecycle =====
 up: env
-    sudo bash scripts/start-services.sh
+    sudo bash scripts/up.sh
+down:
+    sudo bash scripts/down.sh
+restart: down up
 
-# Bash syntax + shellcheck (if present) + `docker compose config`.
+## ===== check =====
 validate:
     bash scripts/validate.sh
 
-# Stop the stack and remove orphans.
-down:
-    sudo bash scripts/stop-services.sh
-
-# Restart the stack: full down then up.
-restart: down up
-
-# Show running services.
+## ===== inspect =====
 ps:
     sudo {{compose}} ps
-
-# Pull latest images.
 pull:
     sudo {{compose}} pull
-
-# Tail logs for the whole stack, or one service: `just logs caddy`.
 logs service="":
     sudo {{compose}} logs -f --tail=200 {{service}}

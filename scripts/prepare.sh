@@ -1,9 +1,9 @@
 #!/bin/bash
 # =============================================================================
-# prepare-linux.sh - provision the host (Ubuntu Server 24.04 LTS).
+# prepare.sh - provision the host (Ubuntu Server 24.04 LTS).
 #
 # usage:
-#   sudo bash scripts/prepare-linux.sh
+#   sudo bash scripts/prepare.sh
 #   # or via just: `just prepare`
 #
 # what this does:
@@ -23,7 +23,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=lib/log.sh
 source "$SCRIPT_DIR/lib/log.sh"
 
-[[ $EUID -ne 0 ]] && die "run as root: sudo bash scripts/prepare-linux.sh"
+[[ $EUID -ne 0 ]] && die "run as root: sudo bash scripts/prepare.sh"
 
 ## ===== system update ====================
 info "updating packages..."
@@ -39,7 +39,7 @@ ok "sleep and suspend disabled."
 ## ===== SSH ====================
 info "hardening SSH..."
 cat > /etc/ssh/sshd_config << 'EOF'
-# managed by prepare-linux.sh
+# managed by prepare.sh
 PasswordAuthentication no
 PubkeyAuthentication yes
 AuthorizedKeysFile .ssh/authorized_keys

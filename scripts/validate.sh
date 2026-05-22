@@ -13,7 +13,6 @@ ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 # shellcheck source=lib/log.sh
 source "$SCRIPT_DIR/lib/log.sh"
 ENV_FILE="$ROOT_DIR/.env"
-ENV_EXAMPLE="$ROOT_DIR/.env.example"
 # shellcheck source=lib/env.sh
 source "$SCRIPT_DIR/lib/env.sh"
 
