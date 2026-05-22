@@ -9,12 +9,12 @@
 # =============================================================================
 
 set -euo pipefail
-source "$SCRIPT_DIR/lib/log.sh"
-source "$SCRIPT_DIR/lib/env.sh"
-source "$SCRIPT_DIR/lib/runtime.sh"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+source "$SCRIPT_DIR/lib/log.sh"
+source "$SCRIPT_DIR/lib/env.sh"
+source "$SCRIPT_DIR/lib/runtime.sh"
 
 ENV_EXAMPLE=".env.example"
 AUTHELIA_USERS_DB="services/authelia/config/users_database.yml"
