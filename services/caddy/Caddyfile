@@ -38,6 +38,12 @@ budget.{$DOMAIN} {
 	reverse_proxy actual_budget:5006
 }
 
+pulse.{$DOMAIN} {
+	tls internal
+	import authelia
+	reverse_proxy dashboard:8050
+}
+
 dns.{$DOMAIN} {
 	tls internal
 	import authelia
