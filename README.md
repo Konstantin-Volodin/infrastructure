@@ -74,6 +74,14 @@ just up         # start services
 | qBittorrent + Gluetun    | `https://downloads.voxlab.home/` | Installed |
 | Actual Budget            | `https://budget.voxlab.home`     | Installed |
 
+### Custom services
+
+Apps with their own repo + compose stack, proxied in here (not started by `just up`).
+
+| Service        | URL                         | Status    | Description                                                          |
+|----------------|-----------------------------|-----------|---------------------------------------------------------------------|
+| [Montreal Pulse](https://github.com/Konstantin-Volodin/montreal-pulse) | `https://pulse.voxlab.home` | Installed | streaming stock trades dashboard |
+
 ### Architecture
 
 - Reverse proxy: Caddy terminates TLS (internal CA), routes by hostname
