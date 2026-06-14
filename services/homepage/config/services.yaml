@@ -29,6 +29,12 @@
         subtitle: Actual Budget
         server: my-docker
         container: actual_budget
+    - Pulse:
+        icon: mdi-chart-line
+        href: https://pulse.{{HOMEPAGE_VAR_DOMAIN}}
+        subtitle: Montreal Pulse
+        server: my-docker
+        container: montreal-pulse-dashboard-1
 
 - Core:
     - DNS:
