@@ -92,6 +92,12 @@ movies.{$DOMAIN} {
 	reverse_proxy gluetun:7878
 }
 
+ai.{$DOMAIN} {
+	tls internal
+	import authelia
+	reverse_proxy odysseus:7000
+}
+
 watch.{$DOMAIN} {
 	tls internal
 	reverse_proxy jellyfin:8096 {

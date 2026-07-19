@@ -35,6 +35,12 @@
         subtitle: Montreal Pulse
         server: my-docker
         container: montreal-pulse-dashboard-1
+    - AI:
+        icon: mdi-robot-outline
+        href: https://ai.{{HOMEPAGE_VAR_DOMAIN}}
+        subtitle: Odysseus
+        server: my-docker
+        container: odysseus-odysseus-1
 
 - Core:
     - DNS:

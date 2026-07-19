@@ -52,6 +52,19 @@ just up         # start services
 
 **Jellyfin** (`https://watch.voxlab.home`): run the setup wizard (creates admin user), add libraries `/data/tv` and `/data/movies`, then Dashboard → Playback → Transcoding → enable **Intel QuickSync (QSV)** (confirm `/dev/dri/renderD128`). Verify HW transcoding: `sudo docker exec jellyfin /usr/lib/jellyfin-ffmpeg/vainfo` should list the iHD driver + H.264/HEVC profiles. The route is intentionally **not** behind Authelia - Jellyfin's mobile/TV apps and Chromecast can't do the Authelia web flow, so it uses its own accounts.
 
+**Odysseus** (`https://ai.voxlab.home`): clone [the repo](https://github.com/pewdiepie-archdaemon/odysseus) next to `infrastructure/`, `cp .env.example .env`, then set `ALLOWED_ORIGINS=https://ai.voxlab.home` and `SECURE_COOKIES=true` in `.env`. Join it to the proxy net with a `docker-compose.override.yml`:
+
+```yaml
+services:
+  odysseus:
+    networks: [default, proxy]
+networks:
+  proxy:
+    external: true
+```
+
+`docker compose up -d --build`, grab the admin password from `docker compose logs odysseus`, then Settings → Models → add the Anthropic API key (model `claude-opus-4-8`). void's 8 GB RAM means API models only — skip Cookbook local model serving until synapse exists.
+
 ### Accessing some services
 
 **Pi-hole**: admin password: `sudo docker logs pihole | grep "password"`.
@@ -82,6 +95,7 @@ Apps with their own repo + compose stack, proxied in here (not started by `just 
 | Service        | URL                         | Status    | Description                                                          |
 |----------------|-----------------------------|-----------|---------------------------------------------------------------------|
 | [Montreal Pulse](https://github.com/Konstantin-Volodin/montreal-pulse) | `https://pulse.voxlab.home` | Installed | streaming stock trades dashboard |
+| [Odysseus](https://github.com/pewdiepie-archdaemon/odysseus) | `https://ai.voxlab.home` | Pending | self-hosted AI workspace (chat + agents + research) |
 
 ### Architecture
 
@@ -110,7 +124,7 @@ Apps with their own repo + compose stack, proxied in here (not started by `just 
 
 **Hardware / topology**
 - Media node: abyss NAS dedicated to media services (Jellyfin, Sonarr/Radarr, qBittorrent)
-- AI node: convert core → synapse for AI services
+- AI node: convert core → synapse for AI services (Odysseus local model serving moves there)
 - Home automation: Home Assistant (needs Zigbee/Z-Wave USB stick - need to buy a house first ;| )
 
 
