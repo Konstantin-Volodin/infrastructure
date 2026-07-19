@@ -46,7 +46,7 @@ configure_qbittorrent() {
         fi
     }
 
-    set_category books  /data/cwa-books-ingest
+    set_category books  /data/books
     set_category tv     /data/downloads/tv
     set_category movies /data/downloads/movies
 }

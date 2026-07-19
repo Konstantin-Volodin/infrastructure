@@ -12,11 +12,11 @@
         server: my-docker
         container: mealie
     - Books:
-        icon: calibre-web
+        icon: kavita
         href: https://reader.{{HOMEPAGE_VAR_DOMAIN}}
-        subtitle: calibre-web-automated
+        subtitle: Kavita
         server: my-docker
-        container: calibre-web-automated
+        container: kavita
     - Watch:
         icon: jellyfin
         href: https://watch.{{HOMEPAGE_VAR_DOMAIN}}

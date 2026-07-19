@@ -77,7 +77,7 @@ books.{$DOMAIN} {
 reader.{$DOMAIN} {
 	tls internal
 	import authelia
-	reverse_proxy calibre-web-automated:8083
+	reverse_proxy kavita:5000
 }
 
 shows.{$DOMAIN} {

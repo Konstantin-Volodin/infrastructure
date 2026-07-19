@@ -45,9 +45,9 @@ just up         # start services
 
 **Prowlarr** (`https://indexer.voxlab.home`): Indexers → Add. Suggested public: The Pirate Bay, LimeTorrents, YTS (movies), Nyaa (anime).
 
-**Shelfmark**: Settings → Prowlarr (`http://gluetun:9696`, key from Prowlarr → Settings → General); qBittorrent (host `gluetun`, port `8080`, category `books`); Advanced → download path `/cwa-book-ingest`.
+**Shelfmark**: Settings → Prowlarr (`http://gluetun:9696`, key from Prowlarr → Settings → General); qBittorrent (host `gluetun`, port `8080`, category `books`); Advanced → download path `/books`.
 
-**Calibre-Web-Automated**: login `admin` / `admin123`, then Admin → Basic Configuration → enable **Allow Reverse Proxy Authentication** (header `Remote-User`); create a user matching your Authelia username.
+**Kavita** (`https://reader.voxlab.home`): first-run wizard creates the admin account, then Server Settings → Libraries → add **Books** (`/books`) and **Comics** (`/comics`). Shelfmark and qBittorrent's `books` category both download straight into `/books`, so new books appear after a library scan.
 
 **Jellyfin** (`https://watch.voxlab.home`): run the setup wizard (creates admin user), add libraries `/data/tv` and `/data/movies`, then Dashboard → Playback → Transcoding → enable **Intel QuickSync (QSV)** (confirm `/dev/dri/renderD128`). Verify HW transcoding: `sudo docker exec jellyfin /usr/lib/jellyfin-ffmpeg/vainfo` should list the iHD driver + H.264/HEVC profiles. The route is intentionally **not** behind Authelia - Jellyfin's mobile/TV apps and Chromecast can't do the Authelia web flow, so it uses its own accounts.
 
@@ -65,8 +65,8 @@ just up         # start services
 | Immich                   | `https://photos.voxlab.home`     | Installed |
 | Mealie                   | `https://recipes.voxlab.home`    | Installed |
 | Homepage                 | `https://apps.voxlab.home`       | Installed |
-| Book Reader              | `https://reader.voxlab.home/`    | Installed |
-| Book Downloader          | `https://books.voxlab.home/`     | Installed |
+| Book Reader              | `https://reader.voxlab.home/`    | Kavita    |
+| Book Downloader          | `https://books.voxlab.home/`     | Shelfmark |
 | Sonarr                   | `https://shows.voxlab.home/`     | Installed |
 | Radarr                   | `https://movies.voxlab.home/`    | Installed |
 | Jellyfin                 | `https://watch.voxlab.home/`     | Installed |
