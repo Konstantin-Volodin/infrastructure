@@ -10,7 +10,7 @@ services:
     environment:
       IMMICH_CONFIG_FILE: /config/immich.json
       NODE_EXTRA_CA_CERTS: /etc/ssl/certs/combined-ca.crt
-    env_file: ../../.env
+      DB_PASSWORD: ${DB_PASSWORD}
     extra_hosts:
       - "auth.${DOMAIN}:${HOST_IP}"
     depends_on:
@@ -28,7 +28,6 @@ services:
     image: ghcr.io/immich-app/immich-machine-learning:v2
     volumes:
       - ./data/model-cache:/cache
-    env_file: ../../.env
     restart: always
     healthcheck:
       disable: false

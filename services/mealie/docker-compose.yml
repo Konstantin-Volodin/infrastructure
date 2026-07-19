@@ -10,7 +10,6 @@ services:
     volumes:
       - ${DATA_DIR}/mealie:/app/data/
       - ../caddy/combined-ca.crt:/etc/ssl/certs/combined-ca.crt:ro
-    env_file: ../../.env
     extra_hosts:
       - "auth.${DOMAIN}:${HOST_IP}"
     environment:

@@ -7,7 +7,6 @@ services:
       - NET_ADMIN
     devices:
       - /dev/net/tun:/dev/net/tun
-    env_file: ../../.env
     environment:
       TZ: ${TIMEZONE}
       VPN_SERVICE_PROVIDER: protonvpn
@@ -35,7 +34,6 @@ services:
     network_mode: "service:gluetun"
     depends_on:
       - gluetun
-    env_file: ../../.env
     environment:
       PUID: 1000
       PGID: 1000
@@ -55,7 +53,6 @@ services:
     network_mode: "service:gluetun"
     depends_on:
       - gluetun
-    env_file: ../../.env
     environment:
       PUID: 1000
       PGID: 1000
@@ -72,7 +69,6 @@ services:
     network_mode: "service:gluetun"
     depends_on:
       - gluetun
-    env_file: ../../.env
     environment:
       PUID: 1000
       PGID: 1000
@@ -90,7 +86,6 @@ services:
     network_mode: "service:gluetun"
     depends_on:
       - gluetun
-    env_file: ../../.env
     environment:
       PUID: 1000
       PGID: 1000
