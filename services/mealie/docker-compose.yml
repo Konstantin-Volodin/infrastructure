@@ -18,12 +18,12 @@ services:
       PGID: 1000
       TZ: ${TIMEZONE}
       DATA_DIR: /app/data/
-      THEME_LIGHT_PRIMARY: '#6366F1'
-      THEME_LIGHT_ACCENT: '#6366F1'
+      THEME_LIGHT_PRIMARY: '#22D3EE'
+      THEME_LIGHT_ACCENT: '#22D3EE'
       THEME_LIGHT_SECONDARY: '#64748B'
-      THEME_DARK_PRIMARY: '#6366F1'
-      THEME_DARK_ACCENT: '#6366F1'
-      THEME_DARK_SECONDARY: '#1E293B'
+      THEME_DARK_PRIMARY: '#22D3EE'
+      THEME_DARK_ACCENT: '#22D3EE'
+      THEME_DARK_SECONDARY: '#121627'
       SSL_CERT_FILE: /etc/ssl/certs/combined-ca.crt
       BASE_URL: https://recipes.${DOMAIN}
       OIDC_AUTH_ENABLED: "true"

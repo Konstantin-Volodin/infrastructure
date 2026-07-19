@@ -1,0 +1,125 @@
+/* voxlab — Homepage theme overrides ("Neon" palette)
+   Auto-loaded by Homepage from /app/config/custom.css
+   Token source of truth: branding/palette.md */
+
+:root {
+  --vox-bg:         #05060f;
+  --vox-surface:    #0b0e1a;
+  --vox-surface-2:  #121627;
+  --vox-border:     #1c2138;
+  --vox-text:       #e2e8f0;
+  --vox-muted:      #64748b;
+  --vox-accent:     #22d3ee;
+  --vox-accent-hot: #67e8f9;
+  --vox-accent-2:   #e879f9;
+  --vox-glow:       color-mix(in srgb, #22d3ee 30%, transparent);
+}
+
+/* Override Homepage's Tailwind palette tokens. Homepage uses "primary" for
+   accents and "theme-*" tokens for surface chrome. Mapping here so any future
+   color: change in settings.yaml doesn't fight the theme. */
+html.dark,
+html {
+  --color-primary: 34 211 238;          /* cyan-400 */
+  --color-primary-hover: 103 232 249;   /* cyan-300 */
+  --color-logo: 226 232 240;
+}
+
+body {
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, #131a33 0%, transparent 60%),
+    radial-gradient(ellipse 60% 40% at 90% 110%, #1a0f24 0%, transparent 60%),
+    var(--vox-bg) !important;
+  font-family: 'Inter', 'Geist Sans', system-ui, -apple-system, sans-serif !important;
+}
+
+/* Page title — render the "voxlab" wordmark feel */
+#information-widgets,
+.information-widgets {
+  letter-spacing: -0.01em;
+}
+
+/* Service tiles */
+#services .service,
+#services > div > div > div,
+.service-card {
+  background: var(--vox-surface) !important;
+  border: 1px solid var(--vox-border) !important;
+  border-radius: 10px !important;
+  transition: border-color 120ms ease, transform 120ms ease,
+              background 120ms ease, box-shadow 120ms ease;
+}
+
+#services .service:hover,
+.service-card:hover {
+  background: var(--vox-surface-2) !important;
+  border-color: var(--vox-accent) !important;
+  box-shadow: 0 0 14px var(--vox-glow);
+  transform: translateY(-1px);
+}
+
+/* Group headings — terminal readout style, magenta tick as counterpoint */
+#services h2,
+#bookmarks h2 {
+  color: var(--vox-muted) !important;
+  font-family: 'JetBrains Mono', 'Cascadia Code', ui-monospace, monospace !important;
+  font-weight: 500 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.7rem !important;
+  border-bottom: 1px solid var(--vox-border);
+  padding-bottom: 0.5rem;
+}
+
+#services h2::before,
+#bookmarks h2::before {
+  content: "▸ ";
+  color: var(--vox-accent-2);
+}
+
+/* Search bar */
+#information-widgets input,
+input[type="search"] {
+  background: var(--vox-surface) !important;
+  border: 1px solid var(--vox-border) !important;
+  color: var(--vox-text) !important;
+  border-radius: 8px !important;
+}
+
+input[type="search"]:focus {
+  border-color: var(--vox-accent) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px var(--vox-glow), 0 0 16px var(--vox-glow) !important;
+}
+
+/* Resource widget — make the labels subtle */
+.resources .resource .label,
+.resource-label {
+  color: var(--vox-muted) !important;
+}
+
+/* Links — neon accent */
+a {
+  transition: color 120ms ease, text-shadow 120ms ease;
+}
+
+a:hover {
+  color: var(--vox-accent-hot) !important;
+  text-shadow: 0 0 8px var(--vox-glow);
+}
+
+/* Scrollbar (webkit) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--vox-border);
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--vox-accent);
+}
