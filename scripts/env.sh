@@ -267,6 +267,17 @@ create_docker_network() {
     ok "proxy network ready."
 }
 
+install_update_cron() {
+    # SUDO_USER is baked in so detect_real_user resolves the same user
+    # cron runs as root with no sudo context.
+    cat > /etc/cron.d/void-update << EOF
+# managed by scripts/env.sh - nightly image pull + full stack restart
+0 4 * * * root cd ${ROOT_DIR} && SUDO_USER=${REAL_USER} bash scripts/update.sh >> /var/log/void-update.log 2>&1
+EOF
+    chmod 644 /etc/cron.d/void-update
+    ok "nightly update scheduled (04:00, log: /var/log/void-update.log)."
+}
+
 
 main() {
     require_root
@@ -291,6 +302,9 @@ main() {
 
     # ===== networking =====
     create_docker_network
+
+    # ===== maintenance =====
+    install_update_cron
 }
 
 main "$@"
