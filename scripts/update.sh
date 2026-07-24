@@ -1,5 +1,5 @@
 #!/bin/bash
-# Pull latest images, restart the stack, prune what's left behind.
+# Pull latest images, recreate only what changed, prune what's left behind.
 # Runs nightly at 04:00 via /etc/cron.d/void-update (installed by env.sh).
 
 set -euo pipefail
@@ -17,11 +17,15 @@ cd "$ROOT_DIR"
 info "===== update run: $(date -Is) ====="
 
 info "pulling latest images..."
-( cd services && set -a && source ../.env && set +a && docker compose pull --quiet )
-ok "images pulled."
-
-bash "$SCRIPT_DIR/down.sh"
-bash "$SCRIPT_DIR/up.sh"
+(
+    cd services
+    set -a && source ../.env && set +a
+    docker compose pull --quiet
+    # Recreates only containers whose image actually changed — untouched
+    # services keep running, so nothing is stopped on a no-op night.
+    docker compose up -d --remove-orphans
+)
+ok "images pulled; changed services recreated."
 
 info "pruning unused images..."
 docker image prune -f > /dev/null

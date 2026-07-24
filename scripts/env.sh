@@ -268,11 +268,11 @@ create_docker_network() {
 }
 
 install_update_cron() {
-    # SUDO_USER is baked in so detect_real_user resolves the same user
-    # cron runs as root with no sudo context.
+    # update.sh only pulls and reconciles — it never touches file ownership,
+    # so it needs no real-user context and runs cleanly as bare root.
     cat > /etc/cron.d/void-update << EOF
-# managed by scripts/env.sh - nightly image pull + full stack restart
-0 4 * * * root cd ${ROOT_DIR} && SUDO_USER=${REAL_USER} bash scripts/update.sh >> /var/log/void-update.log 2>&1
+# managed by scripts/env.sh - nightly image pull + reconcile
+0 4 * * * root cd ${ROOT_DIR} && bash scripts/update.sh >> /var/log/void-update.log 2>&1
 EOF
     chmod 644 /etc/cron.d/void-update
     ok "nightly update scheduled (04:00, log: /var/log/void-update.log)."

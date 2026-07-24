@@ -29,7 +29,7 @@ just up         # start services
 | `just media`             | wire up media stack mesh                  | [scripts/media.sh](scripts/media.sh)                           |
 | `just validate`          | validate docker compose files             | [scripts/validate.sh](scripts/validate.sh)                     |
 | `just up/down/restart`   | service management                        |                                                                |
-| `just update`            | pull latest images + full restart         | [scripts/update.sh](scripts/update.sh)                         |
+| `just update`            | pull images, recreate only what changed   | [scripts/update.sh](scripts/update.sh)                         |
 | `just logs [svc]`        | logs for the stack, or one service        |                                                                |
 | `just ps`                | show running services                     |                                                                |
 | `just pull`              | pull latest images                        |                                                                |
@@ -104,7 +104,7 @@ Apps with their own repo + compose stack, proxied in here (not started by `just 
 - DNS: Pi-hole serves wildcard `*.voxlab.home` to host IP
 - Remote access: Tailscale VPN + Pi-hole DNS
 - Containers: Docker Compose per service with shared `proxy` network
-- Updates: images track `:latest`; a nightly cron (04:00, installed by `just env`) pulls, restarts the stack, and prunes old images
+- Updates: images track `:latest`; a nightly cron (04:00, installed by `just env`) pulls and reconciles — only containers whose image changed are recreated, so an unchanged night stops nothing
 
 ## Future plans
 
