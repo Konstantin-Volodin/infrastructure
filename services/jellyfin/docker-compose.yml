@@ -4,8 +4,8 @@ services:
     image: lscr.io/linuxserver/jellyfin:latest
     restart: always
     environment:
-      PUID: 1000
-      PGID: 1000
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
       TZ: ${TIMEZONE}
       JELLYFIN_PublishedServerUrl: https://watch.${DOMAIN}
     devices:

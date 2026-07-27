@@ -184,6 +184,12 @@ main() {
     check_authelia_identity
     drop_stale_vars
 
+    # mv preserves ownership, so anything that came from a root-owned layout
+    # lands here still root-owned — readable by the apps, but not deletable.
+    if [ "$moved" -gt 0 ]; then
+        warn "moved files kept their old owner. Run 'just permissions' if the apps refuse to delete."
+    fi
+
     ok "migration done — ${moved} moved, ${skipped} skipped. Run 'just up'."
 }
 
