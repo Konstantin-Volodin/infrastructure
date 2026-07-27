@@ -15,3 +15,16 @@ env_set() {
         printf '%s=%s\n' "$key" "$value" >> "$ENV_FILE"
     fi
 }
+
+# Rewrite ./relative storage paths as absolute. Compose resolves relative bind
+# mounts against the compose file's directory, not the repo root — absolute
+# paths remove the ambiguity. Expects log.sh helpers to be sourced.
+resolve_env_paths() {
+    info "resolving storage paths..."
+    local key val
+    for key in "$@"; do
+        val=$(env_get "$key")
+        [[ "$val" == ./* ]] && env_set "$key" "$(realpath -m "$val")"
+    done
+    ok "storage paths resolved."
+}

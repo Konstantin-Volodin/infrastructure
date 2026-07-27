@@ -75,16 +75,6 @@ sync_env_from_example() {
     ok "${ENV_FILE} synced (${added} new var(s))."
 }
 
-resolve_env_paths() {
-    info "resolving storage paths..."
-    local key val
-    for key in "$@"; do
-        val=$(env_get "$key")
-        [[ "$val" == ./* ]] && env_set "$key" "$(realpath -m "$val")"
-    done
-    ok "storage paths resolved."
-}
-
 
 ## ===== steps =====
 

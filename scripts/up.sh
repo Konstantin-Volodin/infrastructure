@@ -12,7 +12,6 @@ source "$SCRIPT_DIR/lib/runtime.sh"
 
 require_root
 cd "$ROOT_DIR"
-detect_real_user
 load_env_exports
 
 info "starting all services..."
@@ -38,6 +37,3 @@ fi
 info "configuring media stack mesh..."
 bash "$SCRIPT_DIR/media.sh" \
     || warn "media mesh configuration incomplete — see log above; re-run 'just media'."
-
-# Only fix git-tracked files so pull works; leave secrets/data root-owned.
-chown_git_tracked_files
