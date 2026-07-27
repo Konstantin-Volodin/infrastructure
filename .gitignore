@@ -17,6 +17,18 @@ internal-ca.crt
 services/caddy/data/
 services/caddy/config/
 
+# pihole auto-generated state
+services/pihole/etc-pihole/
+
+# authelia runtime
+services/authelia/logs/
+
+# homepage scaffolds these on first run (custom.css is ours - keep it tracked)
+services/homepage/config/logs/
+services/homepage/config/custom.js
+services/homepage/config/kubernetes.yaml
+services/homepage/config/proxmox.yaml
+
 # OS
 .DS_Store
 Thumbs.db
