@@ -19,6 +19,9 @@ just env        # sync .env, generate secrets, safe to rerun
 just up         # start services
 ```
 
+Upgrading an install that predates the storage split? Run `just down && just migrate`
+once before `just up` — see [Storage](#storage).
+
 ### Common targets
 
 | Command                  | What it does                              | Script                                                         |
@@ -27,6 +30,7 @@ just up         # start services
 | `just prepare`           | linux setup                               | [scripts/prepare.sh](scripts/prepare.sh)                       |
 | `just env`               | sync .env file                            | [scripts/env.sh](scripts/env.sh)                               |
 | `just media`             | wire up media stack mesh                  | [scripts/media.sh](scripts/media.sh)                           |
+| `just migrate`           | one-time move onto the storage roots      | [scripts/migrate.sh](scripts/migrate.sh)                       |
 | `just validate`          | validate docker compose files             | [scripts/validate.sh](scripts/validate.sh)                     |
 | `just up/down/restart`   | service management                        |                                                                |
 | `just update`            | pull images, recreate only what changed   | [scripts/update.sh](scripts/update.sh)                         |
@@ -40,7 +44,7 @@ just up         # start services
 
 **Authelia** (`https://auth.voxlab.home`): (1) login `admin` + printed password, (2) change under settings → account (`docker exec authelia cat /data/notification.txt` for the reset OTP).
 
-**Certificates**: clients must trust it to avoid cert warnings. Fetch with `scp vox@void:infrastructure/services/caddy/pki/internal-ca.crt ./internal-ca.crt`
+**Certificates**: clients must trust it to avoid cert warnings. Fetch with `scp vox@void:/srv/void/config/ca/internal-ca.crt ./internal-ca.crt`
 - in Firefox: Settings → Privacy & Security → Certificates → View Certificates → Authorities → Import, check "Trust this CA to identify websites"
 - in Android: Settings → Security → Encryption & credentials → Install a certificate → CA certificate
 
@@ -105,6 +109,67 @@ Apps with their own repo + compose stack, proxied in here (not started by `just 
 - Remote access: Tailscale VPN + Pi-hole DNS
 - Containers: Docker Compose per service with shared `proxy` network
 - Updates: images track `:latest`; a nightly cron (04:00, installed by `just env`) pulls and reconciles — only containers whose image changed are recreated, so an unchanged night stops nothing
+
+## Storage
+
+The repo is declarative only — no container writes into the working tree, so
+`git pull` never fights file ownership and `git clean -xfd` is harmless. State
+lives in three roots, set in `.env` and split by lifetime:
+
+| Root         | Default             | Holds                                               | Lose it and…                        |
+|--------------|---------------------|-----------------------------------------------------|-------------------------------------|
+| `CONFIG_DIR` | `/srv/void/config`  | databases, credentials, certs, per-app settings     | everything resets — **back this up** |
+| `MEDIA_DIR`  | `/srv/void/media`   | tv, movies, books, comics, photos, downloads        | the library is gone                  |
+| `CACHE_DIR`  | `/srv/void/cache`   | transcodes, artwork, ML models                      | it rebuilds itself                   |
+
+Two constraints the split exists to respect:
+
+- **`CONFIG_DIR` must be a local disk.** SQLite and Postgres locking is
+  unreliable over NFS/SMB, so Immich's database and the `*arr` configs can't
+  follow the media to a NAS. `MEDIA_DIR` is the only root meant to move.
+- **Downloads live under `MEDIA_DIR` on purpose.** Sonarr, Radarr, and
+  qBittorrent mount it as a single tree so imports stay hardlinks. Split
+  downloads onto another filesystem and every import becomes a full copy.
+
+Moving to a NAS is then one line in `.env` plus a `mv` of `MEDIA_DIR`.
+
+### Starting over
+
+Deleting the two rebuildable roots resets every service to first-run state.
+`just up` regenerates the CA, Authelia's admin password and OIDC keys, and all
+per-app config — so clients have to re-trust the new cert.
+
+```bash
+just down
+sudo rm -rf /srv/void/config /srv/void/cache    # your CONFIG_DIR and CACHE_DIR
+just up
+```
+
+Check the paths before you hit enter — `MEDIA_DIR` sits next to them under the
+default layout, and one dropped path segment takes the library with it.
+
+### Migrating an existing install
+
+`services/authelia/config/users_database.yml` used to be a tracked file that
+`just env` wrote the admin password hash into, so `git pull` refuses to move
+it and discarding it costs you the admin login. Rescue it first, then migrate:
+
+```bash
+just down
+
+sudo mkdir -p /srv/void/config/authelia                        # or your CONFIG_DIR
+sudo cp services/authelia/config/users_database.yml /srv/void/config/authelia/
+git checkout -- services/authelia/config/users_database.yml    # unblock the pull
+
+git pull
+just migrate    # moves everything else; skips whatever is already in place
+just up
+```
+
+`just migrate` has to run before the first `just up` on this layout — otherwise
+Authelia bootstraps fresh and mints a new admin password and OIDC keys. It
+never overwrites, warns if the Authelia hand-off looks incomplete, and is safe
+to re-run.
 
 ## Future plans
 
