@@ -3,14 +3,16 @@
 #                         Users Database                      #
 ###############################################################
 
-# This file can be used if you do not have an LDAP set up.
+# Seed template. scripts/env.sh copies this to $CONFIG_DIR/authelia/ on first
+# run and hashes a password into the copy. Authelia owns it from then on —
+# edits here only affect a fresh install.
 
 # List of users
 users:
   vox:
     disabled: false
     displayname: 'vox'
-    # password is generated in start-services.sh
+    # hash is written by scripts/env.sh on first run
     password:
     email: 'volodin.kostia@gmail.com'
     groups:

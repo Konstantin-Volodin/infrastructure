@@ -18,7 +18,7 @@ totp: # Time-based One-Time Password
 
 authentication_backend:
   file:
-    path: '/config/users_database.yml'
+    path: '/data/users_database.yml'
     password:
       algorithm: 'argon2id'
       iterations: 3
@@ -62,7 +62,7 @@ regulation:
 storage:
   # encryption_key: '{{ env "AUTHELIA_STORAGE_ENCRYPTION_KEY" }}'
   local:
-    path: '/config/db.sqlite3'
+    path: '/data/db.sqlite3'
 
 notifier:
   filesystem:
@@ -72,7 +72,7 @@ identity_providers:
   oidc:
     hmac_secret: '{{ env "AUTHELIA_OIDC_HMAC_SECRET" }}'
     jwks:
-      - key: {{ secret "/config/secrets/oidc.jwks.key" | mindent 10 "|" | msquote }}
+      - key: {{ secret "/data/secrets/oidc.jwks.key" | mindent 10 "|" | msquote }}
     clients:
       - client_id: 'immich'
         client_name: 'Immich'
