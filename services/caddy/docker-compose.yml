@@ -11,6 +11,7 @@ services:
       - ./data:/data
       - ./config:/config
       - ./pki:/pki:ro
-    env_file: ../../.env
+    environment:
+      DOMAIN: ${DOMAIN}
     networks:
       - proxy

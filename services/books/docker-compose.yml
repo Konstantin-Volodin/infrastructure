@@ -3,29 +3,27 @@ services:
     container_name: shelfmark
     image: ghcr.io/calibrain/shelfmark:latest
     restart: always
-    env_file: ../../.env
     environment:
       PUID: 1000
       PGID: 1000
       TZ: ${TIMEZONE}
     volumes:
       - ${DATA_DIR}/shelfmark:/config
-      - ${DATA_DIR}/cwa-books-ingest:/cwa-book-ingest
+      - ${DATA_DIR}/books:/books
     networks:
       - proxy
 
-  calibre-web-automated:
-    container_name: calibre-web-automated
-    image: crocodilestick/calibre-web-automated:latest
+  kavita:
+    container_name: kavita
+    image: lscr.io/linuxserver/kavita:latest
     restart: always
-    env_file: ../../.env
     environment:
       PUID: 1000
       PGID: 1000
       TZ: ${TIMEZONE}
     volumes:
-      - ${DATA_DIR}/calibre-web:/config
-      - ${DATA_DIR}/books:/calibre-library
-      - ${DATA_DIR}/cwa-books-ingest:/cwa-book-ingest
+      - ${DATA_DIR}/kavita:/config
+      - ${DATA_DIR}/books:/books:ro
+      - ${DATA_DIR}/comics:/comics:ro
     networks:
       - proxy

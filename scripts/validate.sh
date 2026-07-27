@@ -76,6 +76,7 @@ if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; 
         env_set AUTHELIA_OIDC_HMAC_SECRET "validation"
         env_set IMMICH_OIDC_SECRET "validation"
         env_set MEALIE_OIDC_SECRET "validation"
+        env_set ACTUAL_OIDC_SECRET "validation"
     fi
     if ! docker compose -f services/docker-compose.yml --env-file "$ROOT_DIR/.env" config -q; then
         warn "docker compose config failed"

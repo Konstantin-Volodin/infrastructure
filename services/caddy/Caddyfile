@@ -33,6 +33,17 @@ recipes.{$DOMAIN} {
 	reverse_proxy mealie:9000
 }
 
+budget.{$DOMAIN} {
+	tls internal
+	reverse_proxy actual_budget:5006
+}
+
+pulse.{$DOMAIN} {
+	tls internal
+	import authelia
+	reverse_proxy dashboard:8050
+}
+
 dns.{$DOMAIN} {
 	tls internal
 	import authelia
@@ -66,7 +77,7 @@ books.{$DOMAIN} {
 reader.{$DOMAIN} {
 	tls internal
 	import authelia
-	reverse_proxy calibre-web-automated:8083
+	reverse_proxy kavita:5000
 }
 
 shows.{$DOMAIN} {
@@ -79,6 +90,12 @@ movies.{$DOMAIN} {
 	tls internal
 	import authelia
 	reverse_proxy gluetun:7878
+}
+
+ai.{$DOMAIN} {
+	tls internal
+	import authelia
+	reverse_proxy odysseus:7000
 }
 
 watch.{$DOMAIN} {

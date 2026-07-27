@@ -5,6 +5,7 @@ data/
 
 # generated files (contain secrets or are derived from templates)
 services/authelia/config/oidc.pem
+services/authelia/config/db.sqlite3
 services/authelia/secrets/
 services/immich/config/immich.json
 services/pihole/config/05-void-dns.conf
@@ -30,3 +31,4 @@ images/
 services/recipe-ocr/
 .claude
 CLAUDE.md
+branding/

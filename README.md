@@ -29,6 +29,7 @@ just up         # start services
 | `just media`             | wire up media stack mesh                  | [scripts/media.sh](scripts/media.sh)                           |
 | `just validate`          | validate docker compose files             | [scripts/validate.sh](scripts/validate.sh)                     |
 | `just up/down/restart`   | service management                        |                                                                |
+| `just update`            | pull images, recreate only what changed   | [scripts/update.sh](scripts/update.sh)                         |
 | `just logs [svc]`        | logs for the stack, or one service        |                                                                |
 | `just ps`                | show running services                     |                                                                |
 | `just pull`              | pull latest images                        |                                                                |
@@ -45,11 +46,24 @@ just up         # start services
 
 **Prowlarr** (`https://indexer.voxlab.home`): Indexers → Add. Suggested public: The Pirate Bay, LimeTorrents, YTS (movies), Nyaa (anime).
 
-**Shelfmark**: Settings → Prowlarr (`http://gluetun:9696`, key from Prowlarr → Settings → General); qBittorrent (host `gluetun`, port `8080`, category `books`); Advanced → download path `/cwa-book-ingest`.
+**Shelfmark**: Settings → Prowlarr (`http://gluetun:9696`, key from Prowlarr → Settings → General); qBittorrent (host `gluetun`, port `8080`, category `books`); Advanced → download path `/books`.
 
-**Calibre-Web-Automated**: login `admin` / `admin123`, then Admin → Basic Configuration → enable **Allow Reverse Proxy Authentication** (header `Remote-User`); create a user matching your Authelia username.
+**Kavita** (`https://reader.voxlab.home`): first-run wizard creates the admin account, then Server Settings → Libraries → add **Books** (`/books`) and **Comics** (`/comics`). Shelfmark and qBittorrent's `books` category both download straight into `/books`, so new books appear after a library scan.
 
 **Jellyfin** (`https://watch.voxlab.home`): run the setup wizard (creates admin user), add libraries `/data/tv` and `/data/movies`, then Dashboard → Playback → Transcoding → enable **Intel QuickSync (QSV)** (confirm `/dev/dri/renderD128`). Verify HW transcoding: `sudo docker exec jellyfin /usr/lib/jellyfin-ffmpeg/vainfo` should list the iHD driver + H.264/HEVC profiles. The route is intentionally **not** behind Authelia - Jellyfin's mobile/TV apps and Chromecast can't do the Authelia web flow, so it uses its own accounts.
+
+**Odysseus** (`https://ai.voxlab.home`): clone [the repo](https://github.com/pewdiepie-archdaemon/odysseus) next to `infrastructure/`, `cp .env.example .env`, then set `ALLOWED_ORIGINS=https://ai.voxlab.home` and `SECURE_COOKIES=true` in `.env`. Join it to the proxy net with a `docker-compose.override.yml`:
+
+```yaml
+services:
+  odysseus:
+    networks: [default, proxy]
+networks:
+  proxy:
+    external: true
+```
+
+`docker compose up -d --build`, grab the admin password from `docker compose logs odysseus`, then Settings → Models → add the Anthropic API key (model `claude-opus-4-8`). void's 8 GB RAM means API models only — skip Cookbook local model serving until synapse exists.
 
 ### Accessing some services
 
@@ -65,21 +79,32 @@ just up         # start services
 | Immich                   | `https://photos.voxlab.home`     | Installed |
 | Mealie                   | `https://recipes.voxlab.home`    | Installed |
 | Homepage                 | `https://apps.voxlab.home`       | Installed |
-| Book Reader              | `https://reader.voxlab.home/`    | Installed |
-| Book Downloader          | `https://books.voxlab.home/`     | Installed |
+| Book Reader              | `https://reader.voxlab.home/`    | Kavita    |
+| Book Downloader          | `https://books.voxlab.home/`     | Shelfmark |
 | Sonarr                   | `https://shows.voxlab.home/`     | Installed |
 | Radarr                   | `https://movies.voxlab.home/`    | Installed |
 | Jellyfin                 | `https://watch.voxlab.home/`     | Installed |
 | Prowlarr                 | `https://indexer.voxlab.home/`   | Installed |
 | qBittorrent + Gluetun    | `https://downloads.voxlab.home/` | Installed |
+| Actual Budget            | `https://budget.voxlab.home`     | Installed |
+
+### Custom services
+
+Apps with their own repo + compose stack, proxied in here (not started by `just up`).
+
+| Service        | URL                         | Status    | Description                                                          |
+|----------------|-----------------------------|-----------|---------------------------------------------------------------------|
+| [Montreal Pulse](https://github.com/Konstantin-Volodin/montreal-pulse) | `https://pulse.voxlab.home` | Installed | streaming stock trades dashboard |
+| [Odysseus](https://github.com/pewdiepie-archdaemon/odysseus) | `https://ai.voxlab.home` | Pending | self-hosted AI workspace (chat + agents + research) |
 
 ### Architecture
 
 - Reverse proxy: Caddy terminates TLS (internal CA), routes by hostname
-- Auth: Authelia forward auth for all routes + OIDC for Immich and Mealie
+- Auth: Authelia forward auth for all routes + OIDC for Immich, Mealie, and Actual Budget
 - DNS: Pi-hole serves wildcard `*.voxlab.home` to host IP
 - Remote access: Tailscale VPN + Pi-hole DNS
 - Containers: Docker Compose per service with shared `proxy` network
+- Updates: images track `:latest`; a nightly cron (04:00, installed by `just env`) pulls and reconciles — only containers whose image changed are recreated, so an unchanged night stops nothing
 
 ## Future plans
 
@@ -99,7 +124,7 @@ just up         # start services
 
 **Hardware / topology**
 - Media node: abyss NAS dedicated to media services (Jellyfin, Sonarr/Radarr, qBittorrent)
-- AI node: convert core → synapse for AI services
+- AI node: convert core → synapse for AI services (Odysseus local model serving moves there)
 - Home automation: Home Assistant (needs Zigbee/Z-Wave USB stick - need to buy a house first ;| )
 
 

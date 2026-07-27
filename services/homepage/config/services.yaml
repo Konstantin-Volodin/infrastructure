@@ -12,17 +12,35 @@
         server: my-docker
         container: mealie
     - Books:
-        icon: calibre-web
+        icon: kavita
         href: https://reader.{{HOMEPAGE_VAR_DOMAIN}}
-        subtitle: calibre-web-automated
+        subtitle: Kavita
         server: my-docker
-        container: calibre-web-automated
+        container: kavita
     - Watch:
         icon: jellyfin
         href: https://watch.{{HOMEPAGE_VAR_DOMAIN}}
         subtitle: Jellyfin
         server: my-docker
         container: jellyfin
+    - Budget:
+        icon: actual-budget
+        href: https://budget.{{HOMEPAGE_VAR_DOMAIN}}
+        subtitle: Actual Budget
+        server: my-docker
+        container: actual_budget
+    - Pulse:
+        icon: mdi-chart-line
+        href: https://pulse.{{HOMEPAGE_VAR_DOMAIN}}
+        subtitle: Montreal Pulse
+        server: my-docker
+        container: montreal-pulse-dashboard-1
+    - AI:
+        icon: mdi-robot-outline
+        href: https://ai.{{HOMEPAGE_VAR_DOMAIN}}
+        subtitle: Odysseus
+        server: my-docker
+        container: odysseus-odysseus-1
 
 - Core:
     - DNS:

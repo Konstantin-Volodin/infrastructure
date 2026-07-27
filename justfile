@@ -21,6 +21,8 @@ up: env
 down:
     sudo bash scripts/down.sh
 restart: down up
+update:
+    sudo bash scripts/update.sh
 
 ## ===== check =====
 validate:

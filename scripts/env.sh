@@ -123,6 +123,7 @@ generate_secrets() {
     gen_secret AUTHELIA_OIDC_HMAC_SECRET
     gen_secret IMMICH_OIDC_SECRET
     gen_secret MEALIE_OIDC_SECRET
+    gen_secret ACTUAL_OIDC_SECRET
 
     info "checking user credentials..."
     prompt_credential PROTONVPN_OPENVPN_USER "ProtonVPN OpenVPN username (from account.protonvpn.com/account#openvpn)"
@@ -222,11 +223,12 @@ create_data_directories() {
         "$DATA_DIR/jellyfin"
         "$DATA_DIR/jellyfin-cache"
         "$DATA_DIR/books"
-        "$DATA_DIR/cwa-books-ingest"
+        "$DATA_DIR/comics"
         "$DATA_DIR/shelfmark"
-        "$DATA_DIR/calibre-web"
+        "$DATA_DIR/kavita"
         "$DATA_DIR/immich-uploads"
         "$DATA_DIR/mealie"
+        "$DATA_DIR/budget"
     )
     local dir
     for dir in "${dirs[@]}"; do
@@ -265,6 +267,17 @@ create_docker_network() {
     ok "proxy network ready."
 }
 
+install_update_cron() {
+    # update.sh only pulls and reconciles — it never touches file ownership,
+    # so it needs no real-user context and runs cleanly as bare root.
+    cat > /etc/cron.d/void-update << EOF
+# managed by scripts/env.sh - nightly image pull + reconcile
+0 4 * * * root cd ${ROOT_DIR} && bash scripts/update.sh >> /var/log/void-update.log 2>&1
+EOF
+    chmod 644 /etc/cron.d/void-update
+    ok "nightly update scheduled (04:00, log: /var/log/void-update.log)."
+}
+
 
 main() {
     require_root
@@ -289,6 +302,9 @@ main() {
 
     # ===== networking =====
     create_docker_network
+
+    # ===== maintenance =====
+    install_update_cron
 }
 
 main "$@"

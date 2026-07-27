@@ -3,7 +3,6 @@ services:
     container_name: jellyfin
     image: lscr.io/linuxserver/jellyfin:latest
     restart: always
-    env_file: ../../.env
     environment:
       PUID: 1000
       PGID: 1000
@@ -17,7 +16,8 @@ services:
     volumes:
       - ${DATA_DIR}/jellyfin:/config
       - ${DATA_DIR}/jellyfin-cache:/cache
-      - ${DATA_DIR}/tv:/data/tv:ro
-      - ${DATA_DIR}/movies:/data/movies:ro
+      # read-write so Jellyfin's "delete media" action can unlink files
+      - ${DATA_DIR}/tv:/data/tv
+      - ${DATA_DIR}/movies:/data/movies
     networks:
       - proxy
