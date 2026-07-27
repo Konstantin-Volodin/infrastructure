@@ -36,6 +36,11 @@ update:
     sudo docker image prune -f > /dev/null
     @echo "  [✓] images pulled; changed services recreated."
 
+## ===== maintenance =====
+# remove torrents whose library copy was deleted; pass --dry-run to preview
+reap *args:
+    sudo bash scripts/reap.sh {{args}}
+
 ## ===== check =====
 validate:
     sudo bash scripts/validate.sh

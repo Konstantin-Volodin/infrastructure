@@ -287,6 +287,17 @@ EOF
     ok "nightly update scheduled (04:00, log: /var/log/void-update.log)."
 }
 
+install_reap_cron() {
+    # Hourly — it only removes torrents whose library copy is already gone,
+    # so a run that finds nothing costs nothing.
+    cat > /etc/cron.d/void-reap << EOF
+# managed by scripts/env.sh - hourly sweep for torrents with no library copy
+17 * * * * root cd ${ROOT_DIR} && bash scripts/reap.sh >> /var/log/void-reap.log 2>&1
+EOF
+    chmod 644 /etc/cron.d/void-reap
+    ok "hourly torrent reap scheduled (log: /var/log/void-reap.log)."
+}
+
 
 main() {
     require_root
@@ -306,6 +317,7 @@ main() {
 
     create_docker_network
     install_update_cron
+    install_reap_cron
 }
 
 main "$@"
