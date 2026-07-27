@@ -8,9 +8,9 @@ services:
       - "443:443"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      - ./data:/data
-      - ./config:/config
-      - ./pki:/pki:ro
+      - ${CONFIG_DIR}/caddy/data:/data
+      - ${CONFIG_DIR}/caddy/config:/config
+      - ${CONFIG_DIR}/ca:/pki:ro
     environment:
       DOMAIN: ${DOMAIN}
     networks:

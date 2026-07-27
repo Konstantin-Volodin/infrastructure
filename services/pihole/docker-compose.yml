@@ -12,7 +12,7 @@ services:
       TZ: ${TIMEZONE}
       FTLCONF_dns_listeningMode: 'ALL'
     volumes:
-      - './etc-pihole:/etc/pihole'
+      - ${CONFIG_DIR}/pihole:/etc/pihole
     cap_add:
       - SYS_NICE
     restart: unless-stopped

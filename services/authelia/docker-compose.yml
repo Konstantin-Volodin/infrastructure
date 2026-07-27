@@ -17,8 +17,8 @@ services:
       - MEALIE_OIDC_SECRET=${MEALIE_OIDC_SECRET}
       - ACTUAL_OIDC_SECRET=${ACTUAL_OIDC_SECRET}
     volumes:
-      - ./config:/config
-      - ./secrets:/config/secrets
-      - ./logs:/data/log
+      - ./configuration.yml:/config/configuration.yml:ro
+      - ./assets:/config/assets:ro
+      - ${CONFIG_DIR}/authelia:/data
     networks:
       - proxy
