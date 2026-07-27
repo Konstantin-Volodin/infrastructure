@@ -21,8 +21,8 @@ Source SVGs live in `branding/` at the repo root. Render them to PNG/ICO at the
 sizes above when you're ready to install. Quick recipe with ImageMagick:
 
 ```bash
-magick branding/favicon.svg -resize 256x256 services/authelia/config/assets/logo.png
-magick branding/favicon.svg -resize 64x64   services/authelia/config/assets/favicon.ico
+magick branding/favicon.svg -resize 256x256 services/authelia/assets/logo.png
+magick branding/favicon.svg -resize 64x64   services/authelia/assets/favicon.ico
 ```
 
 If you don't have ImageMagick handy, use any SVG → PNG converter (or open in
