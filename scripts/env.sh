@@ -17,8 +17,8 @@ source "$SCRIPT_DIR/lib/env.sh"
 source "$SCRIPT_DIR/lib/runtime.sh"
 
 ENV_EXAMPLE=".env.example"
-AUTHELIA_USERS_DB="services/authelia/config/users_database.yml"
-AUTHELIA_OIDC_KEY="services/authelia/secrets/oidc.jwks.key"
+AUTHELIA_CONFIG="services/authelia/configuration.yml"
+AUTHELIA_USERS_TMPL="services/authelia/users_database.yml.tmpl"
 AUTHELIA_BANNER='
   ==============================================================
     Authelia initial admin password (record this NOW —
@@ -28,16 +28,12 @@ AUTHELIA_BANNER='
       password: __PASSWORD__
 
     Hash applied in:
-      services/authelia/config/users_database.yml
+      __USERS_DB__
     Change the password from the Authelia UI after first login.
   =============================================================='
 
 
 ## ===== env helpers =====
-
-env_get() { grep "^$1=" "$ENV_FILE" | head -n1 | cut -d= -f2- | tr -d '\r'; }
-
-env_has_value() { grep -q "^$1=.\+" "$ENV_FILE" ; }
 
 gen_secret() {
     env_has_value "$1" && return
@@ -96,8 +92,10 @@ prepare_env() {
     info "preparing environment..."
     sync_env_from_example
 
-    env_has_value DATA_DIR || env_set DATA_DIR "./data"
-    resolve_env_paths DATA_DIR
+    env_has_value CONFIG_DIR || env_set CONFIG_DIR "/srv/void/config"
+    env_has_value MEDIA_DIR  || env_set MEDIA_DIR  "/srv/void/media"
+    env_has_value CACHE_DIR  || env_set CACHE_DIR  "/srv/void/cache"
+    resolve_env_paths CONFIG_DIR MEDIA_DIR CACHE_DIR
 
     HOST_IP=$(hostname -I | awk '{print $1}')
     env_set HOST_IP "$HOST_IP"
@@ -130,6 +128,12 @@ generate_secrets() {
     prompt_credential PROTONVPN_OPENVPN_PASSWORD "ProtonVPN OpenVPN password" true
 }
 
+seed_users_database() {
+    [ -f "$AUTHELIA_USERS_DB" ] && return
+    cp "$AUTHELIA_USERS_TMPL" "$AUTHELIA_USERS_DB"
+    ok "users database seeded from template."
+}
+
 ensure_admin_password() {
     local container="$1"
     grep -Eq '^    password:[[:space:]]*[^[:space:]]+' "$AUTHELIA_USERS_DB" && {
@@ -148,7 +152,8 @@ ensure_admin_password() {
     sed -i "s|^    password:.*|    password: '${hash}'|" "$AUTHELIA_USERS_DB"
     ok "admin password hash written."
 
-    printf '%s\n' "${AUTHELIA_BANNER//__PASSWORD__/$password}"
+    local banner="${AUTHELIA_BANNER//__PASSWORD__/$password}"
+    printf '%s\n' "${banner//__USERS_DB__/$AUTHELIA_USERS_DB}"
 }
 
 ensure_oidc_keys() {
@@ -158,14 +163,20 @@ ensure_oidc_keys() {
         return
     }
 
-    docker exec "$container" authelia crypto pair rsa generate --directory /config/secrets > /dev/null
-    mv services/authelia/secrets/private.pem services/authelia/secrets/oidc.jwks.key
-    mv services/authelia/secrets/public.pem  services/authelia/secrets/oidc.jwks.pub
+    docker exec "$container" authelia crypto pair rsa generate --directory /data/secrets > /dev/null
+    mv "${AUTHELIA_STATE}/secrets/private.pem" "$AUTHELIA_OIDC_KEY"
+    mv "${AUTHELIA_STATE}/secrets/public.pem"  "${AUTHELIA_STATE}/secrets/oidc.jwks.pub"
     ok "authelia OIDC keys generated."
 }
 
 setup_authelia() {
-    [ -f "$AUTHELIA_USERS_DB" ] || die "missing $AUTHELIA_USERS_DB"
+    # State paths depend on CONFIG_DIR, so they resolve here rather than at load.
+    AUTHELIA_STATE="${CONFIG_DIR}/authelia"
+    AUTHELIA_USERS_DB="${AUTHELIA_STATE}/users_database.yml"
+    AUTHELIA_OIDC_KEY="${AUTHELIA_STATE}/secrets/oidc.jwks.key"
+
+    [ -f "$AUTHELIA_USERS_TMPL" ] || die "missing $AUTHELIA_USERS_TMPL"
+    seed_users_database
 
     if grep -Eq '^    password:[[:space:]]*[^[:space:]]+' "$AUTHELIA_USERS_DB" && [ -f "$AUTHELIA_OIDC_KEY" ]; then
         ok "authelia already bootstrapped."
@@ -173,12 +184,11 @@ setup_authelia() {
     fi
 
     info "bootstrapping authelia..."
-    mkdir -p services/authelia/secrets
 
     local container="temp-authelia-$$"
     docker run -d --rm \
-        -v "${PWD}/services/authelia/config/configuration.yml:/config/configuration.yml" \
-        -v "${PWD}/services/authelia/secrets:/config/secrets" \
+        -v "${PWD}/${AUTHELIA_CONFIG}:/config/configuration.yml:ro" \
+        -v "${AUTHELIA_STATE}:/data" \
         --name "$container" \
         authelia/authelia:latest sleep infinity > /dev/null
     trap "docker stop $container >/dev/null 2>&1 || true" EXIT
@@ -189,62 +199,93 @@ setup_authelia() {
 
 generate_immich_config() {
     info "generating immich config..."
-    envsubst < services/immich/config/immich.json.tmpl > services/immich/config/immich.json
+    envsubst < services/immich/immich.json.tmpl > "${CONFIG_DIR}/immich/immich.json"
     ok "immich config generated."
 }
 
+# Homepage needs a writable config dir, so the tracked YAML is copied in rather
+# than mounted. The repo stays the source of truth: every run overwrites.
+seed_homepage_config() {
+    info "seeding homepage config..."
+    local src dest
+    while IFS= read -r -d '' src; do
+        dest="${CONFIG_DIR}/homepage/${src#services/homepage/config/}"
+        install -D -m 644 "$src" "$dest"
+    done < <(git -c safe.directory='*' ls-files -z services/homepage/config)
+    ok "homepage config seeded."
+}
+
 generate_ca_bundle() {
-    if [ -f services/caddy/combined-ca.crt ]; then
+    local ca_dir="${CONFIG_DIR}/ca"
+    if [ -f "${ca_dir}/combined-ca.crt" ]; then
         ok "combined CA bundle already exists."
         return
     fi
 
     info "generating internal CA cert..."
-    mkdir -p services/caddy/pki
     openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes \
-        -keyout services/caddy/pki/internal-ca.key \
-        -out    services/caddy/pki/internal-ca.crt \
+        -keyout "${ca_dir}/internal-ca.key" \
+        -out    "${ca_dir}/internal-ca.crt" \
         -subj "/CN=Void Internal CA"
-    cat /etc/ssl/certs/ca-certificates.crt services/caddy/pki/internal-ca.crt \
-        > services/caddy/combined-ca.crt
+    cat /etc/ssl/certs/ca-certificates.crt "${ca_dir}/internal-ca.crt" \
+        > "${ca_dir}/combined-ca.crt"
     ok "combined CA bundle created."
 }
 
-create_data_directories() {
-    info "ensuring data directories exist with correct ownership..."
-    local dirs=(
-        "$DATA_DIR/downloads"
-        "$DATA_DIR/qbittorrent"
-        "$DATA_DIR/prowlarr"
-        "$DATA_DIR/sonarr"
-        "$DATA_DIR/radarr"
-        "$DATA_DIR/tv"
-        "$DATA_DIR/movies"
-        "$DATA_DIR/jellyfin"
-        "$DATA_DIR/jellyfin-cache"
-        "$DATA_DIR/books"
-        "$DATA_DIR/comics"
-        "$DATA_DIR/shelfmark"
-        "$DATA_DIR/kavita"
-        "$DATA_DIR/immich-uploads"
-        "$DATA_DIR/mealie"
-        "$DATA_DIR/budget"
+create_storage_tree() {
+    info "ensuring storage tree exists with correct ownership..."
+
+    # Handed to the real user — these containers run as PUID/PGID 1000.
+    local user_dirs=(
+        "$CONFIG_DIR/qbittorrent"
+        "$CONFIG_DIR/prowlarr"
+        "$CONFIG_DIR/sonarr"
+        "$CONFIG_DIR/radarr"
+        "$CONFIG_DIR/jellyfin"
+        "$CONFIG_DIR/shelfmark"
+        "$CONFIG_DIR/kavita"
+        "$CONFIG_DIR/mealie"
+        "$CONFIG_DIR/budget"
+
+        "$MEDIA_DIR/downloads"
+        "$MEDIA_DIR/tv"
+        "$MEDIA_DIR/movies"
+        "$MEDIA_DIR/books"
+        "$MEDIA_DIR/comics"
+        "$MEDIA_DIR/photos"
+
+        "$CACHE_DIR/jellyfin"
     )
+
+    # Left root-owned — these images run as root or as their own baked-in UID
+    # (postgres owns its data as 999). Chowning them breaks startup.
+    local root_dirs=(
+        "$CONFIG_DIR/authelia/secrets"
+        "$CONFIG_DIR/authelia/log"
+        "$CONFIG_DIR/caddy/data"
+        "$CONFIG_DIR/caddy/config"
+        "$CONFIG_DIR/ca"
+        "$CONFIG_DIR/pihole"
+        "$CONFIG_DIR/homepage"
+        "$CONFIG_DIR/immich"
+        "$CONFIG_DIR/immich-postgres"
+
+        "$CACHE_DIR/immich-model-cache"
+    )
+
     local dir
-    for dir in "${dirs[@]}"; do
+    for dir in "${user_dirs[@]}"; do
         [ -d "$dir" ] && continue
         mkdir -p "$dir"
         chown "$REAL_UID:$REAL_GID" "$dir"
     done
+    mkdir -p "${root_dirs[@]}"
 
-    # Container-managed: postgres owns the contents as UID 999 — never chown.
-    mkdir -p "$DATA_DIR/immich-postgres"
-
-    ok "data directories ready."
+    ok "storage tree ready."
 }
 
 configure_qbittorrent() {
-    local qbit_conf_dir="${DATA_DIR}/qbittorrent/qBittorrent"
+    local qbit_conf_dir="${CONFIG_DIR}/qbittorrent/qBittorrent"
     local qbit_conf="${qbit_conf_dir}/qBittorrent.conf"
 
     info "configuring qbittorrent auth bypass..."
@@ -289,15 +330,17 @@ main() {
     # ===== env + secrets =====
     prepare_env
     generate_secrets
-    setup_authelia
     load_env_exports
 
-    # ===== configs =====
-    generate_immich_config
-    generate_ca_bundle
-
     # ===== filesystem =====
-    create_data_directories
+    # Everything below writes into the storage roots, so they come first.
+    create_storage_tree
+
+    # ===== configs =====
+    setup_authelia
+    generate_immich_config
+    seed_homepage_config
+    generate_ca_bundle
     configure_qbittorrent
 
     # ===== networking =====
