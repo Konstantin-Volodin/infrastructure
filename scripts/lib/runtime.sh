@@ -14,14 +14,6 @@ detect_real_user() {
     REAL_GID=$(id -g "$REAL_USER")
 }
 
-# Normalize git-tracked file ownership so subsequent git operations work for the real user.
-# safe.directory='*' bypasses git's dubious-ownership guard when the tree has mixed ownership.
-chown_git_tracked_files() {
-    git -c safe.directory='*' ls-files -z \
-        | xargs -0 -r chown "$REAL_USER":"$REAL_USER"
-    ok "git-tracked file ownership normalized to $REAL_USER."
-}
-
 load_env_exports() {
     [ -f .env ] || die "missing .env; run scripts/env.sh first"
     set -a

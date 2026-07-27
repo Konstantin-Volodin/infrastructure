@@ -1,5 +1,5 @@
 #!/bin/bash
-# Tear the stack down and normalize git-tracked file ownership.
+# Tear the stack down. State lives outside the repo, so nothing else to clean up.
 
 set -euo pipefail
 
@@ -12,11 +12,8 @@ source "$SCRIPT_DIR/lib/runtime.sh"
 
 require_root
 cd "$ROOT_DIR"
-detect_real_user
 load_env_exports
 
 info "stopping all services..."
 ( cd services && set -a && source ../.env && set +a && docker compose down --remove-orphans )
 ok "all services stopped."
-
-chown_git_tracked_files

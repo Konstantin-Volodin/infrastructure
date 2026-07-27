@@ -25,7 +25,7 @@ wait_http() {
 }
 
 api_key() {
-    local f="${DATA_DIR}/$1/config.xml"
+    local f="${CONFIG_DIR}/$1/config.xml"
     for _ in {1..30}; do
         [ -f "$f" ] && grep -q '<ApiKey>' "$f" && { sed -n 's:.*<ApiKey>\(.*\)</ApiKey>.*:\1:p' "$f"; return; } || sleep 2
     done
