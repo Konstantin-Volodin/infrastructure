@@ -14,10 +14,10 @@ services:
       - "44"                 # video
       - "${RENDER_GID:-109}" # render (Ubuntu default 109; bootstrap auto-detects)
     volumes:
-      - ${DATA_DIR}/jellyfin:/config
-      - ${DATA_DIR}/jellyfin-cache:/cache
+      - ${CONFIG_DIR}/jellyfin:/config
+      - ${CACHE_DIR}/jellyfin:/cache
       # read-write so Jellyfin's "delete media" action can unlink files
-      - ${DATA_DIR}/tv:/data/tv
-      - ${DATA_DIR}/movies:/data/movies
+      - ${MEDIA_DIR}/tv:/data/tv
+      - ${MEDIA_DIR}/movies:/data/movies
     networks:
       - proxy

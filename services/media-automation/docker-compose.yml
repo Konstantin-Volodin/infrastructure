@@ -43,8 +43,10 @@ services:
       # https://github.com/gabe565/linuxserver-mod-vuetorrent
       DOCKER_MODS: ghcr.io/gabe565/linuxserver-mod-vuetorrent
     volumes:
-      - ${DATA_DIR}/qbittorrent:/config
-      - ${DATA_DIR}:/data
+      - ${CONFIG_DIR}/qbittorrent:/config
+      # whole media root as one mount: downloads and library must share a
+      # filesystem for hardlinks and instant imports
+      - ${MEDIA_DIR}:/data
 
   prowlarr:
     container_name: prowlarr
@@ -60,7 +62,7 @@ services:
       PROWLARR__AUTH__METHOD: External
       PROWLARR__AUTH__REQUIRED: DisabledForLocalAddresses
     volumes:
-      - ${DATA_DIR}/prowlarr:/config
+      - ${CONFIG_DIR}/prowlarr:/config
 
   sonarr:
     container_name: sonarr
@@ -76,8 +78,8 @@ services:
       SONARR__AUTH__METHOD: External
       SONARR__AUTH__REQUIRED: DisabledForLocalAddresses
     volumes:
-      - ${DATA_DIR}/sonarr:/config
-      - ${DATA_DIR}:/data
+      - ${CONFIG_DIR}/sonarr:/config
+      - ${MEDIA_DIR}:/data
 
   radarr:
     container_name: radarr
@@ -93,5 +95,5 @@ services:
       RADARR__AUTH__METHOD: External
       RADARR__AUTH__REQUIRED: DisabledForLocalAddresses
     volumes:
-      - ${DATA_DIR}/radarr:/config
-      - ${DATA_DIR}:/data
+      - ${CONFIG_DIR}/radarr:/config
+      - ${MEDIA_DIR}:/data

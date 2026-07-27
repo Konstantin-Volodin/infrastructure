@@ -3,10 +3,10 @@ services:
     container_name: immich-server
     image: ghcr.io/immich-app/immich-server:v2
     volumes:
-      - ${DATA_DIR}/immich-uploads:/data
+      - ${MEDIA_DIR}/photos:/data
       - /etc/localtime:/etc/localtime:ro
-      - ./config/immich.json:/config/immich.json:ro
-      - ../caddy/combined-ca.crt:/etc/ssl/certs/combined-ca.crt:ro
+      - ${CONFIG_DIR}/immich/immich.json:/config/immich.json:ro
+      - ${CONFIG_DIR}/ca/combined-ca.crt:/etc/ssl/certs/combined-ca.crt:ro
     environment:
       IMMICH_CONFIG_FILE: /config/immich.json
       NODE_EXTRA_CA_CERTS: /etc/ssl/certs/combined-ca.crt
@@ -27,7 +27,7 @@ services:
     container_name: immich-machine-learning
     image: ghcr.io/immich-app/immich-machine-learning:v2
     volumes:
-      - ./data/model-cache:/cache
+      - ${CACHE_DIR}/immich-model-cache:/cache
     restart: always
     healthcheck:
       disable: false
@@ -52,7 +52,7 @@ services:
       POSTGRES_DB: immich
       POSTGRES_INITDB_ARGS: '--data-checksums'
     volumes:
-      - ${DATA_DIR}/immich-postgres:/var/lib/postgresql/data
+      - ${CONFIG_DIR}/immich-postgres:/var/lib/postgresql/data
     shm_size: 128mb
     restart: always
     healthcheck:
