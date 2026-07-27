@@ -12,7 +12,7 @@
 #   3.  SSH hardening - pubkey only, no root login
 #   4.  UFW firewall - deny all except SSH, DNS, HTTP, HTTPS
 #   5.  fail2ban - ban IPs after 5 failed SSH attempts
-#   6.  network - static IPs via Netplan
+#   6.  network - DHCP on both links via Netplan, ethernet preferred
 #   7.  docker + git + helper tools
 #   8.  pihole - free port 53 (disable systemd-resolved stub listener)
 # =============================================================================
@@ -77,44 +77,39 @@ systemctl enable --now fail2ban
 ok "fail2ban configured."
 
 ## ===== network ====================
-info "configuring static network..."
-read -rp  "  [?] Ethernet interface (default: enp0s31f6):         " ETH_IF;  ETH_IF=${ETH_IF:-enp0s31f6}
-read -rp  "  [?] WiFi interface     (default: wlp2s0):            " WIFI_IF; WIFI_IF=${WIFI_IF:-wlp2s0}
-read -rp  "  [?] Ethernet IP        (default: 192.168.28.100/24): " ETH_IP;  ETH_IP=${ETH_IP:-192.168.28.100/24}
-read -rp  "  [?] WiFi IP            (default: 192.168.28.101/24): " WIFI_IP; WIFI_IP=${WIFI_IP:-192.168.28.101/24}
-read -rp  "  [?] Gateway            (default: 192.168.28.1):      " GW;      GW=${GW:-192.168.28.1}
+info "configuring network..."
+read -rp  "  [?] Ethernet interface (default: enp0s31f6): " ETH_IF;  ETH_IF=${ETH_IF:-enp0s31f6}
+read -rp  "  [?] WiFi interface     (default: wlp2s0):    " WIFI_IF; WIFI_IF=${WIFI_IF:-wlp2s0}
 read -rp  "  [?] WiFi SSID: " WIFI_SSID
 read -rsp "  [?] WiFi password: " WIFI_PASS; echo
 
+# both links take DHCP - the LAN address is not load-bearing here. HOST_IP is
+# re-detected on every `just up`, and Pi-hole's wildcard resolves to the
+# Tailscale IP. Pin a reservation on the router if you want a stable address.
+# Route metrics keep ethernet preferred and wifi as fallback.
 cat > /etc/netplan/50-cloud-init.yaml << EOF
 network:
   version: 2
   ethernets:
     ${ETH_IF}:
-      dhcp4: no
+      dhcp4: true
       optional: true
-      addresses: [${ETH_IP}]
-      routes:
-        - { to: default, via: ${GW}, metric: 100 }
-      nameservers:
-        addresses: [8.8.8.8, 1.1.1.1]
+      dhcp4-overrides:
+        route-metric: 100
   wifis:
     ${WIFI_IF}:
+      dhcp4: true
       optional: true
+      dhcp4-overrides:
+        route-metric: 600
       access-points:
         "${WIFI_SSID}":
           password: "${WIFI_PASS}"
-      dhcp4: no
-      addresses: [${WIFI_IP}]
-      routes:
-        - { to: default, via: ${GW}, metric: 600 }
-      nameservers:
-        addresses: [8.8.8.8, 1.1.1.1]
 EOF
 
 chmod 600 /etc/netplan/50-cloud-init.yaml
 netplan apply
-ok "network configured. Ethernet: ${ETH_IP}, WiFi: ${WIFI_IP}."
+ok "network configured. ethernet preferred, wifi fallback, both via DHCP."
 
 ## ===== docker + git + helper tools ====================
 info "installing docker, git, and helper tools..."
@@ -125,7 +120,19 @@ ok "docker $(docker --version | cut -d' ' -f3 | tr -d ',') and helper tools inst
 ## ===== pihole - free port 53 ====================
 info "freeing port 53 for Pi-hole..."
 sed -i 's/#DNSStubListener=yes/DNSStubListener=no/' /etc/systemd/resolved.conf
-ok "systemd-resolved stub listener disabled."
+
+# with the stub listener off, nothing answers on 127.0.0.53 - the address the
+# default /etc/resolv.conf symlink points at. Replace it with real upstreams so
+# the host can still resolve, and resolve without depending on Pi-hole being up
+# (Pi-hole is a container; needing DNS to start it would be circular).
+rm -f /etc/resolv.conf
+cat > /etc/resolv.conf << 'EOF'
+nameserver 1.1.1.1
+nameserver 8.8.8.8
+EOF
+
+systemctl restart systemd-resolved
+ok "systemd-resolved stub listener disabled, host resolver pointed upstream."
 
 ## ===== done ====================
 echo ""
