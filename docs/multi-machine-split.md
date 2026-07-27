@@ -18,7 +18,7 @@ Currently all services run on a single machine (void). The goal is to split serv
    - Accepts `void`, `abyss`, or `push-secrets` as argument
    - `void`: generate secrets + CA + Authelia keys, start void.yml, configure Pi-hole DNS, fix ownership
    - `abyss`: verify .env + CA cert exist, template immich config, start abyss.yml, fix ownership
-   - `push-secrets`: scp `.env` and `shared/combined-ca.crt` to abyss
+   - `push-secrets`: scp `.env` and `$CONFIG_DIR/ca/combined-ca.crt` to abyss
 
 2. **`lib/common.sh`** - shared logging helpers (`info`, `ok`, `warn`, `die`), env loading
 
@@ -49,7 +49,7 @@ Currently all services run on a single machine (void). The goal is to split serv
      - path: mealie/docker-compose.yml
    ```
 
-7. **`shared/`** directory (gitignored) - holds `combined-ca.crt` copied from caddy/pki after generation
+7. ~~**`shared/`** directory~~ - no longer needed. The CA bundle already lives outside the repo at `$CONFIG_DIR/ca/combined-ca.crt`, so `push-secrets` copies it to the same path on abyss and both machines mount it identically.
 
 ### Modified files
 
@@ -61,21 +61,19 @@ Currently all services run on a single machine (void). The goal is to split serv
 9. **`services/immich/docker-compose.yml`**
    - Remove `proxy` network from immich-server
    - Add `ports: ["2283:2283"]` to immich-server
-   - Change CA cert volume: `../caddy/combined-ca.crt` → `../shared/combined-ca.crt`
    - Change extra_hosts: `auth.${DOMAIN}:${HOST_IP}` → `auth.${DOMAIN}:${VOID_TAILSCALE_IP}`
 
 10. **`services/mealie/docker-compose.yml`**
     - Remove `proxy` network
     - Add `ports: ["9000:9000"]`
-    - Change CA cert volume: `../caddy/combined-ca.crt` → `../shared/combined-ca.crt`
-    - Change extra_hosts: `auth.${DOMAIN}:${HOST_IP}` → `auth.${DOMAIN}:${VOID_TAILSCALE_IP}`
+     - Change extra_hosts: `auth.${DOMAIN}:${HOST_IP}` → `auth.${DOMAIN}:${VOID_TAILSCALE_IP}`
 
 11. **`.env.example`** - add new variables:
     - `VOID_TAILSCALE_IP=` (e.g., 100.x.x.x)
     - `ABYSS_TAILSCALE_IP=` (e.g., 100.x.x.x)
     - `ABYSS_SSH=` (e.g., vox@abyss, used by push-secrets)
 
-12. **`.gitignore`** - add `shared/`
+12. ~~**`.gitignore`** - add `shared/`~~ - dropped along with `shared/`
 
 13. **`README.md`** - update with two-machine setup instructions
 
@@ -88,12 +86,11 @@ Currently all services run on a single machine (void). The goal is to split serv
 1. Create `lib/common.sh`, `lib/secrets.sh`, `lib/certs.sh` by extracting from `start-services.sh`
 2. Create `services/void.yml` and `services/abyss.yml`
 3. Create `deploy.sh` with void/abyss/push-secrets modes
-4. Create `shared/` dir, update `.gitignore`
-5. Update `.env.example` with new variables
-6. Modify Caddyfile for remote reverse proxy
-7. Modify immich and mealie compose files (ports, CA path, extra_hosts, remove proxy network)
-8. Update README.md
-9. Delete `start-services.sh` and `services/docker-compose.yml`
+4. Update `.env.example` with new variables
+5. Modify Caddyfile for remote reverse proxy
+6. Modify immich and mealie compose files (ports, extra_hosts, remove proxy network)
+7. Update README.md
+8. Delete `start-services.sh` and `services/docker-compose.yml`
 
 ## Verification
 

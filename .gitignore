@@ -1,33 +1,10 @@
-# data
+# secrets
 .secrets
 .env
+
+# only reachable if a storage root is pointed back inside the repo — the
+# defaults live in /srv/void, and nothing the stack runs writes here
 data/
-
-# generated files (contain secrets or are derived from templates)
-services/authelia/config/oidc.pem
-services/authelia/config/db.sqlite3
-services/authelia/secrets/
-services/immich/config/immich.json
-services/pihole/config/05-void-dns.conf
-services/caddy/combined-ca.crt
-services/caddy/pki/
-internal-ca.crt
-
-# caddy auto-generated state
-services/caddy/data/
-services/caddy/config/
-
-# pihole auto-generated state
-services/pihole/etc-pihole/
-
-# authelia runtime
-services/authelia/logs/
-
-# homepage scaffolds these on first run (custom.css is ours - keep it tracked)
-services/homepage/config/logs/
-services/homepage/config/custom.js
-services/homepage/config/kubernetes.yaml
-services/homepage/config/proxmox.yaml
 
 # OS
 .DS_Store
