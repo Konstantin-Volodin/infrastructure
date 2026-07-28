@@ -43,7 +43,7 @@ once before `just up` — see [Storage](#storage).
 
 **Tailscale**: (1) get IP (`tailscale ip -4`), (2) tailscale admin → DNS → Nameservers → add a custom nameserver restricted to `voxlab.home`.
 
-**Authelia** (`https://auth.voxlab.home`): (1) login `admin` + printed password, (2) change under settings → account (`docker exec authelia cat /data/notification.txt` for the reset OTP).
+**Authelia** (`https://auth.voxlab.home`): (1) login `admin` + printed password, (2) change under settings → account (`docker exec authelia cat /data/notification.txt` for the reset OTP). Sessions live in Redis rather than in memory, so a restart no longer signs you out; tick **remember me** at login and a browser stays good for three months.
 
 **Certificates**: clients must trust it to avoid cert warnings. Fetch with `scp vox@void:/srv/void/config/ca/internal-ca.crt ./internal-ca.crt`
 - in Firefox: Settings → Privacy & Security → Certificates → View Certificates → Authorities → Import, check "Trust this CA to identify websites"

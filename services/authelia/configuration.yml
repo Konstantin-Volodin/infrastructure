@@ -45,10 +45,19 @@ access_control:
 
 session:
   name: 'authelia_session'
-  expiration: '1h'
-  inactivity: '5m'
-  remember_me: '1M'
+  # This is a LAN service reached over Tailscale, not something on the open
+  # internet, so the timeouts are tuned for not being nagged. 0 inactivity
+  # means an idle tab stays logged in; tick "remember me" and a browser is
+  # good for three months.
+  expiration: '1w'
+  inactivity: '0'
+  remember_me: '3M'
   # secret: '{{ env "AUTHELIA_SESSION_SECRET" }}'
+  # Sessions live in Redis, not in memory — otherwise every `just restart`
+  # (nightly, via the update cron) logs everyone out of everything.
+  redis:
+    host: 'authelia-redis'
+    port: 6379
   cookies:
     - domain: '{{ env "DOMAIN" }}'
       authelia_url: 'https://auth.{{ env "DOMAIN" }}'
