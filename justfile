@@ -38,7 +38,7 @@ update:
 
 ## ===== check =====
 validate:
-    bash scripts/validate.sh
+    sudo bash scripts/validate.sh
 
 ## ===== inspect =====
 ps:

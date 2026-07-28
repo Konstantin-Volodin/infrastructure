@@ -93,7 +93,7 @@ ok "network configured. ethernet preferred, wifi fallback, both via DHCP."
 
 ## ===== docker + git + helper tools ====================
 info "installing docker, git, and helper tools..."
-apt-get install -y -q docker.io docker-compose-v2 git gettext-base just
+apt-get install -y -q docker.io docker-compose-v2 git gettext-base just shellcheck
 systemctl enable docker
 ok "docker $(docker --version | cut -d' ' -f3 | tr -d ',') and helper tools installed."
 
