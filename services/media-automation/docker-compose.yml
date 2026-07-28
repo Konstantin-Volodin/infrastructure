@@ -119,7 +119,10 @@ services:
       QBT_WEB_SERVER: false
       QBT_DRY_RUN: ${REAP_DRY_RUN:-true}
     volumes:
+      # /config as a whole, not just the log dir: it drops to PUID and wants to
+      # write .backups alongside the config. The file lands on top, read-only,
+      # so the repo stays the only place the config is edited.
+      - ${CONFIG_DIR}/qbit-manage:/config
       - ./qbit-manage.yml:/config/config.yml:ro
-      - ${CONFIG_DIR}/qbit-manage:/config/logs
       # the same mount qBittorrent has, so paths and link counts agree
       - ${MEDIA_DIR}:/data

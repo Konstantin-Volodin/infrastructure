@@ -204,6 +204,7 @@ create_storage_tree() {
     # write into.
     local user_dirs=(
         "$CONFIG_DIR/qbittorrent"
+        "$CONFIG_DIR/qbit-manage"
         "$CONFIG_DIR/prowlarr"
         "$CONFIG_DIR/sonarr"
         "$CONFIG_DIR/radarr"
