@@ -28,7 +28,7 @@ just up         # start services
 | `just env`               | sync .env file                            | [scripts/env.sh](scripts/env.sh)                               |
 | `just media`             | wire up media stack mesh                  | [scripts/media.sh](scripts/media.sh)                           |
 | `just permissions`       | repair storage tree ownership             | [scripts/permissions.sh](scripts/permissions.sh)               |
-| `just reap`              | remove torrents whose media was deleted   | [scripts/reap.sh](scripts/reap.sh)                             |
+| `just reap`              | remove torrents whose media was deleted   | [qbit-manage.yml](services/media-automation/qbit-manage.yml)   |
 | `just validate`          | validate docker compose files             | [scripts/validate.sh](scripts/validate.sh)                     |
 | `just up/down/restart`   | service management                        | [scripts/post-start.sh](scripts/post-start.sh)                 |
 | `just update`            | pull images, recreate only what changed   | [justfile](justfile)                                           |
@@ -162,16 +162,25 @@ seeding, with not a byte given back.
 Seeding here is deliberately unlimited — no ratio cap, no time cap, nothing
 retires a torrent on a schedule. A torrent goes away when its media does:
 
+That job belongs to [qbit-manage](https://github.com/StuffAnThings/qbit_manage),
+which runs beside qBittorrent in gluetun's network namespace and mounts the
+media root exactly as qBittorrent sees it, so paths and link counts agree
+without translation. Hourly, it tags every torrent that has no hardlink outside
+`/data/downloads` with `noHL`, then removes the tagged ones with their files.
+
+Torrents that finished in the last day are spared: an import Sonarr has not
+performed yet looks identical to one you deleted, so `min_seeding_time` holds
+them back until it is clear which they are. Nothing else retires a torrent —
+the `default` share-limit group is deliberately unlimited.
+
 ```bash
-just reap --dry-run   # what would go, and how much it frees
-just reap             # go through with it
+just logs qbit-manage   # what it did on its last pass
+just reap -dr           # run now, report only, remove nothing
+just reap               # run now, for real
 ```
 
-`reap` asks qBittorrent what it holds, checks whether each torrent still has a
-library hardlink, and removes the ones that do not — files included. Torrents
-that finished in the last 24 hours are left alone, since Sonarr may not have
-imported them yet (`REAP_GRACE_HOURS` to change that). It runs hourly from
-cron, so a delete in any of the three UIs frees its space within the hour.
+It ships disarmed: `REAP_DRY_RUN=true` in `.env` means it reports and touches
+nothing. Watch a cycle, then set it to `false`.
 
 The upshot: delete from whichever UI you like, and the space comes back.
 

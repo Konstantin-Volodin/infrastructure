@@ -37,9 +37,9 @@ update:
     @echo "  [✓] images pulled; changed services recreated."
 
 ## ===== maintenance =====
-# remove torrents whose library copy was deleted; pass --dry-run to preview
+# run the reaper now instead of waiting for its next cycle; -dr to preview
 reap *args:
-    sudo bash scripts/reap.sh {{args}}
+    sudo {{compose}} exec qbit-manage qbit-manage -r -tnhl -sl {{args}}
 
 ## ===== check =====
 validate:

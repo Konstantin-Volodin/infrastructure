@@ -96,3 +96,30 @@ services:
     volumes:
       - ${CONFIG_DIR}/radarr:/config
       - ${MEDIA_DIR}:/data
+
+  # Sonarr and Radarr import by hardlink, so deleting from their UI drops one
+  # name and qBittorrent keeps seeding the other. This tags those torrents noHL
+  # and removes them once they have finished seeding — see qbit-manage.yml.
+  qbit-manage:
+    container_name: qbit-manage
+    image: ghcr.io/stuffanthings/qbit_manage:latest
+    restart: always
+    # gluetun's namespace: qBittorrent is on localhost, so its local-address
+    # auth bypass applies and no API credentials are needed.
+    network_mode: "service:gluetun"
+    depends_on:
+      - qbittorrent
+    environment:
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
+      TZ: ${TIMEZONE}
+      # which commands run is in qbit-manage.yml; this is just the cadence
+      QBT_SCHEDULE: ${REAP_INTERVAL_MINUTES:-60}
+      QBT_STARTUP_DELAY: 120
+      QBT_WEB_SERVER: false
+      QBT_DRY_RUN: ${REAP_DRY_RUN:-true}
+    volumes:
+      - ./qbit-manage.yml:/config/config.yml:ro
+      - ${CONFIG_DIR}/qbit-manage:/config/logs
+      # the same mount qBittorrent has, so paths and link counts agree
+      - ${MEDIA_DIR}:/data

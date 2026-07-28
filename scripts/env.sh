@@ -287,15 +287,11 @@ EOF
     ok "nightly update scheduled (04:00, log: /var/log/void-update.log)."
 }
 
-install_reap_cron() {
-    # Hourly — it only removes torrents whose library copy is already gone,
-    # so a run that finds nothing costs nothing.
-    cat > /etc/cron.d/void-reap << EOF
-# managed by scripts/env.sh - hourly sweep for torrents with no library copy
-17 * * * * root cd ${ROOT_DIR} && bash scripts/reap.sh >> /var/log/void-reap.log 2>&1
-EOF
-    chmod 644 /etc/cron.d/void-reap
-    ok "hourly torrent reap scheduled (log: /var/log/void-reap.log)."
+# The qbit-manage container schedules its own reaping now.
+remove_reap_cron() {
+    [ -e /etc/cron.d/void-reap ] || return 0
+    rm -f /etc/cron.d/void-reap
+    ok "removed the old host reap cron — qbit-manage schedules itself."
 }
 
 
@@ -317,7 +313,7 @@ main() {
 
     create_docker_network
     install_update_cron
-    install_reap_cron
+    remove_reap_cron
 }
 
 main "$@"
