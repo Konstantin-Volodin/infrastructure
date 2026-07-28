@@ -1,29 +1,11 @@
 #!/bin/bash
-# =============================================================================
-# prepare.sh - provision the host (Ubuntu Server 24.04 LTS).
-#
-# usage:
-#   sudo bash scripts/prepare.sh
-#   # or via just: `just prepare`
-#
-# what this does:
-#   1.  system update
-#   2.  disable sleep & suspend
-#   3.  SSH hardening - pubkey only, no root login
-#   4.  UFW firewall - deny all except SSH, DNS, HTTP, HTTPS
-#   5.  fail2ban - ban IPs after 5 failed SSH attempts
-#   6.  network - DHCP on both links via Netplan, ethernet preferred
-#   7.  docker + git + helper tools
-#   8.  pihole - free port 53 (disable systemd-resolved stub listener)
-# =============================================================================
+# Provision the host (Ubuntu Server 24.04 LTS).
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=lib/log.sh
-source "$SCRIPT_DIR/lib/log.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
-[[ $EUID -ne 0 ]] && die "run as root: sudo bash scripts/prepare.sh"
+require_root
 
 ## ===== system update ====================
 info "updating packages..."
@@ -83,10 +65,8 @@ read -rp  "  [?] WiFi interface     (default: wlp2s0):    " WIFI_IF; WIFI_IF=${W
 read -rp  "  [?] WiFi SSID: " WIFI_SSID
 read -rsp "  [?] WiFi password: " WIFI_PASS; echo
 
-# both links take DHCP - the LAN address is not load-bearing here. HOST_IP is
-# re-detected on every `just up`, and Pi-hole's wildcard resolves to the
-# Tailscale IP. Pin a reservation on the router if you want a stable address.
-# Route metrics keep ethernet preferred and wifi as fallback.
+# DHCP on both links; HOST_IP is re-detected on every `just up`. Route metrics
+# keep ethernet preferred.
 cat > /etc/netplan/50-cloud-init.yaml << EOF
 network:
   version: 2
@@ -113,7 +93,7 @@ ok "network configured. ethernet preferred, wifi fallback, both via DHCP."
 
 ## ===== docker + git + helper tools ====================
 info "installing docker, git, and helper tools..."
-apt-get install -y -q docker.io docker-compose-v2 git gettext-base just
+apt-get install -y -q docker.io docker-compose-v2 git gettext-base just shellcheck
 systemctl enable docker
 ok "docker $(docker --version | cut -d' ' -f3 | tr -d ',') and helper tools installed."
 
@@ -121,10 +101,8 @@ ok "docker $(docker --version | cut -d' ' -f3 | tr -d ',') and helper tools inst
 info "freeing port 53 for Pi-hole..."
 sed -i 's/#DNSStubListener=yes/DNSStubListener=no/' /etc/systemd/resolved.conf
 
-# with the stub listener off, nothing answers on 127.0.0.53 - the address the
-# default /etc/resolv.conf symlink points at. Replace it with real upstreams so
-# the host can still resolve, and resolve without depending on Pi-hole being up
-# (Pi-hole is a container; needing DNS to start it would be circular).
+# Nothing answers on 127.0.0.53 now. Point at real upstreams — resolving via
+# Pi-hole would be circular, it needs DNS to pull its own image.
 rm -f /etc/resolv.conf
 cat > /etc/resolv.conf << 'EOF'
 nameserver 1.1.1.1

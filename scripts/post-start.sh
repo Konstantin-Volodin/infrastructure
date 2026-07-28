@@ -1,22 +1,11 @@
 #!/bin/bash
-# Bring the stack up and run post-start service configuration.
+# Post-start configuration: Pi-hole wildcard DNS, then the media mesh.
 
 set -euo pipefail
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-# shellcheck source=lib/log.sh
-source "$SCRIPT_DIR/lib/log.sh"
-# shellcheck source=lib/runtime.sh
-source "$SCRIPT_DIR/lib/runtime.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
 require_root
-cd "$ROOT_DIR"
 load_env_exports
-
-info "starting all services..."
-( cd services && set -a && source ../.env && set +a && docker compose up -d --remove-orphans )
-ok "all services up."
 
 if command -v tailscale >/dev/null 2>&1; then
     info "waiting for pihole to be ready..."
@@ -34,6 +23,5 @@ else
     warn "install tailscale and re-run 'just up' (or set dnsmasq_lines manually) when ready."
 fi
 
-info "configuring media stack mesh..."
-bash "$SCRIPT_DIR/media.sh" \
+bash scripts/media.sh \
     || warn "media mesh configuration incomplete — see log above; re-run 'just media'."

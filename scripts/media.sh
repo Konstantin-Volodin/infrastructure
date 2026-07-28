@@ -1,17 +1,10 @@
 #!/bin/bash
-#
-# Wires up the media stack mesh.
-#
-# - qBittorrent: books / tv / movies categories
-# - Sonarr/Radarr: download client + root folder
-# - Prowlarr: full sync to Sonarr & Radarr
-#
-# Idempotent. Re-running converges to the same state.
+# Wires up the media stack mesh. Idempotent.
 
 set -euo pipefail
 
-source scripts/lib/log.sh
-source scripts/lib/runtime.sh
+source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
+
 CURL_IMAGE="curlimages/curl:8.11.1"
 
 

@@ -44,8 +44,7 @@ services:
       DOCKER_MODS: ghcr.io/gabe565/linuxserver-mod-vuetorrent
     volumes:
       - ${CONFIG_DIR}/qbittorrent:/config
-      # whole media root as one mount: downloads and library must share a
-      # filesystem for hardlinks and instant imports
+      # one mount: downloads and library must share a filesystem for hardlinks
       - ${MEDIA_DIR}:/data
 
   prowlarr:

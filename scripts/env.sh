@@ -1,36 +1,12 @@
 #!/bin/bash
-# =============================================================================
-# env.sh
-#   syncs .env, generates secrets, bootstraps authelia, prepares the host
-#   for `docker compose up`.
-#
-# usage:
-#   sudo bash scripts/env.sh
-# =============================================================================
+# Syncs .env, generates secrets, bootstraps authelia, prepares the host.
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-source "$SCRIPT_DIR/lib/log.sh"
-source "$SCRIPT_DIR/lib/env.sh"
-source "$SCRIPT_DIR/lib/runtime.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
-ENV_EXAMPLE=".env.example"
 AUTHELIA_CONFIG="services/authelia/configuration.yml"
 AUTHELIA_USERS_TMPL="services/authelia/users_database.yml.tmpl"
-AUTHELIA_BANNER='
-  ==============================================================
-    Authelia initial admin password (record this NOW —
-    plaintext is not stored on disk):
-
-      user:     vox
-      password: __PASSWORD__
-
-    Hash applied in:
-      __USERS_DB__
-    Change the password from the Authelia UI after first login.
-  =============================================================='
 
 
 ## ===== env helpers =====
@@ -81,11 +57,6 @@ sync_env_from_example() {
 prepare_env() {
     info "preparing environment..."
     sync_env_from_example
-
-    env_has_value CONFIG_DIR || env_set CONFIG_DIR "/srv/void/config"
-    env_has_value MEDIA_DIR  || env_set MEDIA_DIR  "/srv/void/media"
-    env_has_value CACHE_DIR  || env_set CACHE_DIR  "/srv/void/cache"
-    resolve_env_paths CONFIG_DIR MEDIA_DIR CACHE_DIR
 
     HOST_IP=$(hostname -I | awk '{print $1}')
     env_set HOST_IP "$HOST_IP"
@@ -146,10 +117,9 @@ ensure_admin_password() {
     [ -n "$hash" ] || die "failed to generate authelia admin password hash"
 
     sed -i "s|^    password:.*|    password: '${hash}'|" "$AUTHELIA_USERS_DB"
-    ok "admin password hash written."
 
-    local banner="${AUTHELIA_BANNER//__PASSWORD__/$password}"
-    printf '%s\n' "${banner//__USERS_DB__/$AUTHELIA_USERS_DB}"
+    warn "authelia admin — record this now, the plaintext is not stored:"
+    warn "  vox / ${password}"
 }
 
 ensure_oidc_keys() {
@@ -199,8 +169,7 @@ generate_immich_config() {
     ok "immich config generated."
 }
 
-# Homepage needs a writable config dir, so the tracked YAML is copied in rather
-# than mounted. The repo stays the source of truth: every run overwrites.
+# Homepage needs a writable config dir, so the YAML is copied in, not mounted.
 seed_homepage_config() {
     info "seeding homepage config..."
     local src dest
@@ -254,8 +223,8 @@ create_storage_tree() {
         "$CACHE_DIR/jellyfin"
     )
 
-    # Left root-owned — these images run as root or as their own baked-in UID
-    # (postgres owns its data as 999). Chowning them breaks startup.
+    # Left root-owned — these run as root or their own baked-in UID (postgres
+    # is 999); chowning them breaks startup.
     local root_dirs=(
         "$CONFIG_DIR/authelia/secrets"
         "$CONFIG_DIR/authelia/log"
@@ -271,11 +240,9 @@ create_storage_tree() {
         "$CACHE_DIR/immich-model-cache"
     )
 
-    # Chown every run, not just on creation. A dir that arrived some other way —
-    # moved in by migrate.sh, made by hand, restored from a backup — carries
-    # whatever ownership it had, and skipping it leaves the tree permanently
-    # unwritable. Top level only: the contents are the library, and walking it
-    # on every `just up` is not free. `just permissions` does the deep repair.
+    # Chown every run — a dir that arrived some other way keeps its old owner
+    # and leaves the tree unwritable. Top level only; `just permissions` walks
+    # the whole library.
     local dir
     for dir in "${user_dirs[@]}"; do
         mkdir -p "$dir"
@@ -311,11 +278,10 @@ create_docker_network() {
 }
 
 install_update_cron() {
-    # update.sh only pulls and reconciles — it never touches file ownership,
-    # so it needs no real-user context and runs cleanly as bare root.
+    # Absolute path — cron's PATH is minimal.
     cat > /etc/cron.d/void-update << EOF
 # managed by scripts/env.sh - nightly image pull + reconcile
-0 4 * * * root cd ${ROOT_DIR} && bash scripts/update.sh >> /var/log/void-update.log 2>&1
+0 4 * * * root cd ${ROOT_DIR} && /usr/bin/just update >> /var/log/void-update.log 2>&1
 EOF
     chmod 644 /etc/cron.d/void-update
     ok "nightly update scheduled (04:00, log: /var/log/void-update.log)."
@@ -324,31 +290,21 @@ EOF
 
 main() {
     require_root
-    cd "$ROOT_DIR"
-
-    # ===== identity =====
     detect_real_user
 
-    # ===== env + secrets =====
     prepare_env
     generate_secrets
     load_env_exports
 
-    # ===== filesystem =====
-    # Everything below writes into the storage roots, so they come first.
+    # everything below writes into the storage roots
     create_storage_tree
-
-    # ===== configs =====
     setup_authelia
     generate_immich_config
     seed_homepage_config
     generate_ca_bundle
     configure_qbittorrent
 
-    # ===== networking =====
     create_docker_network
-
-    # ===== maintenance =====
     install_update_cron
 }
 

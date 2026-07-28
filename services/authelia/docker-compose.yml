@@ -25,15 +25,12 @@ services:
     networks:
       - proxy
 
-  # Session store. Authelia keeps sessions in memory without this, so every
-  # restart is a fresh login everywhere. Nothing else uses it, and it is never
-  # published — only reachable from inside the proxy network.
+  # Session store — without it every restart is a fresh login everywhere.
   authelia-redis:
     container_name: authelia-redis
     image: redis:7-alpine
     restart: unless-stopped
-    # Sessions are worth keeping across a reboot, not just a restart, so they
-    # get flushed to disk rather than held purely in memory.
+    # persisted so sessions survive a reboot, not just a restart
     command: redis-server --save 60 1 --appendonly yes
     environment:
       TZ: ${TIMEZONE}
