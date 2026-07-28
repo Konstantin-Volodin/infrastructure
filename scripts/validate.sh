@@ -1,10 +1,5 @@
 #!/bin/bash
-# =============================================================================
-# validate.sh - sanity checks for the repo.
-#   - shellcheck over every shell script (bash -n as a fallback)
-#   - `docker compose config` against the top-level compose file
-# Both tools are optional; whatever is installed gets used.
-# =============================================================================
+# Sanity checks. Both tools are optional; whatever is installed gets used.
 
 set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
@@ -32,10 +27,7 @@ fi
 
 ## ===== compose =====
 
-# A throwaway .env lets compose interpolate on a machine that has never run
-# `just env`. The keys come from the compose files themselves — that catches
-# the secrets env.sh generates, which never appear in .env.example, and no
-# hand-kept list can go stale.
+# Keys come from the compose files, not .env.example — catches generated secrets.
 seed_validation_env() {
     warn ".env not found — using a temporary one built from .env.example"
     cp "$ENV_EXAMPLE" "$ENV_FILE"

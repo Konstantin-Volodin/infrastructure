@@ -1,12 +1,5 @@
 #!/bin/bash
-# =============================================================================
-# Shared helpers, sourced by every script in this directory:
-#
-#     source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
-#
-# Sourcing this also cds to the repo root — every script wants to run from
-# there, so it happens once here rather than in each of them.
-# =============================================================================
+# Shared helpers. Sourcing this also cds to the repo root.
 
 ## ===== logging =====
 
@@ -26,8 +19,6 @@ cd "$ROOT_DIR"
 
 ## ===== .env accessors =====
 
-env_get() { grep "^$1=" "$ENV_FILE" | head -n1 | cut -d= -f2- | tr -d '\r'; }
-
 env_has_value() { grep -q "^$1=.\+" "$ENV_FILE"; }
 
 env_set() {
@@ -37,19 +28,6 @@ env_set() {
     else
         printf '%s=%s\n' "$key" "$value" >> "$ENV_FILE"
     fi
-}
-
-# Rewrite ./relative storage paths as absolute. Compose resolves relative bind
-# mounts against the compose file's directory, not the repo root — absolute
-# paths remove the ambiguity.
-resolve_env_paths() {
-    info "resolving storage paths..."
-    local key val
-    for key in "$@"; do
-        val=$(env_get "$key")
-        [[ "$val" == ./* ]] && env_set "$key" "$(realpath -m "$val")"
-    done
-    ok "storage paths resolved."
 }
 
 

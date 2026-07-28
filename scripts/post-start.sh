@@ -1,6 +1,5 @@
 #!/bin/bash
-# Post-start host configuration: Pi-hole wildcard DNS, then the media mesh.
-# Runs after `just up` has brought the stack online.
+# Post-start configuration: Pi-hole wildcard DNS, then the media mesh.
 
 set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"

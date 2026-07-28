@@ -1,12 +1,5 @@
 #!/bin/bash
-#
-# Wires up the media stack mesh.
-#
-# - qBittorrent: books / tv / movies categories
-# - Sonarr/Radarr: download client + root folder
-# - Prowlarr: full sync to Sonarr & Radarr
-#
-# Idempotent. Re-running converges to the same state.
+# Wires up the media stack mesh. Idempotent.
 
 set -euo pipefail
 

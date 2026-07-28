@@ -3,8 +3,7 @@
 
 set shell := ["bash", "-eu", "-o", "pipefail", "-c"]
 
-# Interpolation for the included files comes from their own `env_file:` entries,
-# so this only has to cover the top-level compose file.
+# Included files interpolate from their own `env_file:` entries.
 compose := "docker compose -f services/docker-compose.yml --env-file .env"
 
 default:
@@ -29,9 +28,8 @@ down:
     sudo {{compose}} down --remove-orphans
 restart: down up
 
-# Nightly at 04:00 via /etc/cron.d/void-update, installed by scripts/env.sh.
-# `up -d` recreates only containers whose image actually changed, so untouched
-# services keep running and a no-op night stops nothing.
+# Nightly at 04:00 via /etc/cron.d/void-update. `up -d` only recreates
+# containers whose image changed.
 update:
     @echo "  [·] ===== update run: $(date -Is) ====="
     sudo {{compose}} pull --quiet
