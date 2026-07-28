@@ -28,8 +28,7 @@ down:
     sudo {{compose}} down --remove-orphans
 restart: down up
 
-# Nightly at 04:00 via /etc/cron.d/void-update. `up -d` only recreates
-# containers whose image changed.
+# updates every night at 04:00
 update:
     @echo "  [·] ===== update run: $(date -Is) ====="
     sudo {{compose}} pull --quiet
