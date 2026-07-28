@@ -169,9 +169,10 @@ without translation. Hourly, it tags every torrent that has no hardlink outside
 `/data/downloads` with `noHL`, then removes the tagged ones with their files.
 
 Torrents that finished in the last day are spared: an import Sonarr has not
-performed yet looks identical to one you deleted, so `min_seeding_time` holds
-them back until it is clear which they are. Nothing else retires a torrent —
-the `default` share-limit group is deliberately unlimited.
+performed yet looks identical to one you deleted, so a one-day
+`max_seeding_time` holds them back until it is clear which they are. Nothing
+else retires a torrent — the `default` share-limit group is deliberately
+unlimited.
 
 ```bash
 just logs qbit-manage   # what it did on its last pass

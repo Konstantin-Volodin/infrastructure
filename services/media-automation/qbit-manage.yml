@@ -47,19 +47,18 @@ nohardlinks:
   movies:
 
 share_limits:
-  # A torrent lands here only once it has lost its library copy. Seeding time
-  # is not the policy, it is the safety net: a torrent that just finished has
-  # not been imported yet and looks identical to one you deleted, so give the
-  # import a day to happen. Anything you delete in a UI has long since cleared
-  # that day and goes on the next run.
+  # A torrent lands here only once it has lost its library copy. The day is a
+  # safety net, not a policy: a torrent that just finished has not been
+  # imported yet and looks identical to one you deleted. Seeding time counts
+  # from completion, so anything deleted in a UI is long past it.
   noHL:
     priority: 1
     include_all_tags:
       - noHL
-    min_seeding_time: 1d
     max_seeding_time: 1d
     max_ratio: -1
     cleanup: true
+    share_limit_action: Stop
 
   # Everything still in the library. No limits, no cleanup, seed forever.
   default:
@@ -67,6 +66,7 @@ share_limits:
     max_ratio: -1
     max_seeding_time: -1
     cleanup: false
+    add_group_to_tag: false
 
 # Cleanup unlinks immediately, the same as the old script did.
 recyclebin:
