@@ -273,6 +273,17 @@ configure_qbittorrent() {
     ok "qbittorrent auth bypass configured."
 }
 
+# Copied rather than mounted: qbit-manage writes its own defaults back into the
+# file, and nothing in a container may write into the repo. The copy is
+# overwritten every run, so this file stays the one that matters.
+seed_qbit_manage_config() {
+    info "seeding qbit-manage config..."
+    install -D -m 644 -o "$REAL_UID" -g "$REAL_GID" \
+        services/media-automation/qbit-manage.yml \
+        "${CONFIG_DIR}/qbit-manage/config.yml"
+    ok "qbit-manage config seeded."
+}
+
 create_docker_network() {
     docker network inspect proxy >/dev/null 2>&1 || docker network create proxy
     ok "proxy network ready."
@@ -311,6 +322,7 @@ main() {
     seed_homepage_config
     generate_ca_bundle
     configure_qbittorrent
+    seed_qbit_manage_config
 
     create_docker_network
     install_update_cron
