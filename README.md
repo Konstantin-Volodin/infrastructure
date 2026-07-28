@@ -19,9 +19,6 @@ just env        # sync .env, generate secrets, safe to rerun
 just up         # start services
 ```
 
-Upgrading an install that predates the storage split? Run `just down && just migrate`
-once before `just up` — see [Storage](#storage).
-
 ### Common targets
 
 | Command                  | What it does                              | Script                                                         |
@@ -30,11 +27,10 @@ once before `just up` — see [Storage](#storage).
 | `just prepare`           | linux setup                               | [scripts/prepare.sh](scripts/prepare.sh)                       |
 | `just env`               | sync .env file                            | [scripts/env.sh](scripts/env.sh)                               |
 | `just media`             | wire up media stack mesh                  | [scripts/media.sh](scripts/media.sh)                           |
-| `just migrate`           | one-time move onto the storage roots      | [scripts/migrate.sh](scripts/migrate.sh)                       |
 | `just permissions`       | repair storage tree ownership             | [scripts/permissions.sh](scripts/permissions.sh)               |
 | `just validate`          | validate docker compose files             | [scripts/validate.sh](scripts/validate.sh)                     |
-| `just up/down/restart`   | service management                        |                                                                |
-| `just update`            | pull images, recreate only what changed   | [scripts/update.sh](scripts/update.sh)                         |
+| `just up/down/restart`   | service management                        | [scripts/post-start.sh](scripts/post-start.sh)                 |
+| `just update`            | pull images, recreate only what changed   | [justfile](justfile)                                           |
 | `just logs [svc]`        | logs for the stack, or one service        |                                                                |
 | `just ps`                | show running services                     |                                                                |
 | `just pull`              | pull latest images                        |                                                                |
@@ -168,29 +164,6 @@ just up
 
 Check the paths before you hit enter — `MEDIA_DIR` sits next to them under the
 default layout, and one dropped path segment takes the library with it.
-
-### Migrating an existing install
-
-`services/authelia/config/users_database.yml` used to be a tracked file that
-`just env` wrote the admin password hash into, so `git pull` refuses to move
-it and discarding it costs you the admin login. Rescue it first, then migrate:
-
-```bash
-just down
-
-sudo mkdir -p /srv/void/config/authelia                        # or your CONFIG_DIR
-sudo cp services/authelia/config/users_database.yml /srv/void/config/authelia/
-git checkout -- services/authelia/config/users_database.yml    # unblock the pull
-
-git pull
-just migrate    # moves everything else; skips whatever is already in place
-just up
-```
-
-`just migrate` has to run before the first `just up` on this layout — otherwise
-Authelia bootstraps fresh and mints a new admin password and OIDC keys. It
-never overwrites, warns if the Authelia hand-off looks incomplete, and is safe
-to re-run.
 
 ## Future plans
 

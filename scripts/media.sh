@@ -10,8 +10,8 @@
 
 set -euo pipefail
 
-source scripts/lib/log.sh
-source scripts/lib/runtime.sh
+source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
+
 CURL_IMAGE="curlimages/curl:8.11.1"
 
 

@@ -19,11 +19,9 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-# shellcheck source=lib/log.sh
-source "$SCRIPT_DIR/lib/log.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
-[[ $EUID -ne 0 ]] && die "run as root: sudo bash scripts/prepare.sh"
+require_root
 
 ## ===== system update ====================
 info "updating packages..."

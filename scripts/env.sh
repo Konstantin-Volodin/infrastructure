@@ -10,13 +10,8 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
-source "$SCRIPT_DIR/lib/log.sh"
-source "$SCRIPT_DIR/lib/env.sh"
-source "$SCRIPT_DIR/lib/runtime.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
-ENV_EXAMPLE=".env.example"
 AUTHELIA_CONFIG="services/authelia/configuration.yml"
 AUTHELIA_USERS_TMPL="services/authelia/users_database.yml.tmpl"
 AUTHELIA_BANNER='
@@ -271,11 +266,9 @@ create_storage_tree() {
         "$CACHE_DIR/immich-model-cache"
     )
 
-    # Chown every run, not just on creation. A dir that arrived some other way —
-    # moved in by migrate.sh, made by hand, restored from a backup — carries
-    # whatever ownership it had, and skipping it leaves the tree permanently
-    # unwritable. Top level only: the contents are the library, and walking it
-    # on every `just up` is not free. `just permissions` does the deep repair.
+    # Chown every run — a dir that arrived some other way keeps its old owner
+    # and leaves the tree unwritable. Top level only; `just permissions` walks
+    # the whole library.
     local dir
     for dir in "${user_dirs[@]}"; do
         mkdir -p "$dir"
@@ -311,11 +304,12 @@ create_docker_network() {
 }
 
 install_update_cron() {
-    # update.sh only pulls and reconciles — it never touches file ownership,
-    # so it needs no real-user context and runs cleanly as bare root.
+    # `just update` only pulls and reconciles — it never touches file ownership,
+    # so it needs no real-user context and runs cleanly as bare root. Absolute
+    # path because cron's PATH is minimal; apt puts just in /usr/bin.
     cat > /etc/cron.d/void-update << EOF
 # managed by scripts/env.sh - nightly image pull + reconcile
-0 4 * * * root cd ${ROOT_DIR} && bash scripts/update.sh >> /var/log/void-update.log 2>&1
+0 4 * * * root cd ${ROOT_DIR} && /usr/bin/just update >> /var/log/void-update.log 2>&1
 EOF
     chmod 644 /etc/cron.d/void-update
     ok "nightly update scheduled (04:00, log: /var/log/void-update.log)."
@@ -324,7 +318,6 @@ EOF
 
 main() {
     require_root
-    cd "$ROOT_DIR"
 
     # ===== identity =====
     detect_real_user
