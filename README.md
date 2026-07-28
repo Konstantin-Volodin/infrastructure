@@ -31,6 +31,7 @@ once before `just up` — see [Storage](#storage).
 | `just env`               | sync .env file                            | [scripts/env.sh](scripts/env.sh)                               |
 | `just media`             | wire up media stack mesh                  | [scripts/media.sh](scripts/media.sh)                           |
 | `just migrate`           | one-time move onto the storage roots      | [scripts/migrate.sh](scripts/migrate.sh)                       |
+| `just permissions`       | repair storage tree ownership             | [scripts/permissions.sh](scripts/permissions.sh)               |
 | `just validate`          | validate docker compose files             | [scripts/validate.sh](scripts/validate.sh)                     |
 | `just up/down/restart`   | service management                        |                                                                |
 | `just update`            | pull images, recreate only what changed   | [scripts/update.sh](scripts/update.sh)                         |
@@ -132,6 +133,26 @@ Two constraints the split exists to respect:
   downloads onto another filesystem and every import becomes a full copy.
 
 Moving to a NAS is then one line in `.env` plus a `mv` of `MEDIA_DIR`.
+
+### Ownership
+
+The media apps run as `PUID`/`PGID`, detected by `just up` from whoever invoked
+it and written to `.env`. Everything under the roots is owned by that same
+user — the two have to agree, because a container that can read the library but
+not write to the directories holding it will fail every delete while looking
+otherwise healthy.
+
+`just up` only chowns the top of the tree, since walking a full library on every
+start is not free. When files arrive owned by someone else — a migration, a
+restore, a manual `cp` as root — repair the whole tree:
+
+```bash
+just permissions
+```
+
+The symptom worth recognising: Sonarr, Radarr, and Jellyfin all stop deleting at
+once, and nothing else misbehaves. Deleting a file needs write permission on the
+directory holding it, not on the file, so playback and scanning keep working.
 
 ### Starting over
 

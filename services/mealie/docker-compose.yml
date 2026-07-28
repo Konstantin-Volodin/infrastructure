@@ -14,8 +14,8 @@ services:
       - "auth.${DOMAIN}:${HOST_IP}"
     environment:
       ALLOW_SIGNUP: "false"
-      PUID: 1000
-      PGID: 1000
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
       TZ: ${TIMEZONE}
       DATA_DIR: /app/data/
       THEME_LIGHT_PRIMARY: '#22D3EE'

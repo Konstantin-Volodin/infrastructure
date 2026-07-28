@@ -35,8 +35,8 @@ services:
     depends_on:
       - gluetun
     environment:
-      PUID: 1000
-      PGID: 1000
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
       TZ: ${TIMEZONE}
       WEBUI_PORT: 8080
       # VueTorrent — modern WebUI, installed via LSIO docker-mod
@@ -56,8 +56,8 @@ services:
     depends_on:
       - gluetun
     environment:
-      PUID: 1000
-      PGID: 1000
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
       TZ: ${TIMEZONE}
       PROWLARR__AUTH__METHOD: External
       PROWLARR__AUTH__REQUIRED: DisabledForLocalAddresses
@@ -72,8 +72,8 @@ services:
     depends_on:
       - gluetun
     environment:
-      PUID: 1000
-      PGID: 1000
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
       TZ: ${TIMEZONE}
       SONARR__AUTH__METHOD: External
       SONARR__AUTH__REQUIRED: DisabledForLocalAddresses
@@ -89,8 +89,8 @@ services:
     depends_on:
       - gluetun
     environment:
-      PUID: 1000
-      PGID: 1000
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
       TZ: ${TIMEZONE}
       RADARR__AUTH__METHOD: External
       RADARR__AUTH__REQUIRED: DisabledForLocalAddresses

@@ -91,6 +91,12 @@ prepare_env() {
     env_set HOST_IP "$HOST_IP"
     ok "detected host IP: ${HOST_IP}"
 
+    # The compose files read these; create_storage_tree chowns to them. One
+    # source of truth, so "runs as" and "owns the files" cannot drift apart.
+    env_set PUID "$REAL_UID"
+    env_set PGID "$REAL_GID"
+    ok "containers will run as ${REAL_USER} (${REAL_UID}:${REAL_GID})"
+
     if getent group render >/dev/null 2>&1; then
         local render_gid
         render_gid=$(getent group render | cut -d: -f3)
@@ -225,7 +231,8 @@ generate_ca_bundle() {
 create_storage_tree() {
     info "ensuring storage tree exists with correct ownership..."
 
-    # Handed to the real user — these containers run as PUID/PGID 1000.
+    # Handed to the real user — these are the dirs the PUID/PGID containers
+    # write into.
     local user_dirs=(
         "$CONFIG_DIR/qbittorrent"
         "$CONFIG_DIR/prowlarr"
@@ -263,9 +270,13 @@ create_storage_tree() {
         "$CACHE_DIR/immich-model-cache"
     )
 
+    # Chown every run, not just on creation. A dir that arrived some other way —
+    # moved in by migrate.sh, made by hand, restored from a backup — carries
+    # whatever ownership it had, and skipping it leaves the tree permanently
+    # unwritable. Top level only: the contents are the library, and walking it
+    # on every `just up` is not free. `just permissions` does the deep repair.
     local dir
     for dir in "${user_dirs[@]}"; do
-        [ -d "$dir" ] && continue
         mkdir -p "$dir"
         chown "$REAL_UID:$REAL_GID" "$dir"
     done

@@ -17,6 +17,9 @@ media:
 # one-time: move an existing install onto CONFIG_DIR/MEDIA_DIR/CACHE_DIR
 migrate:
     sudo bash scripts/migrate.sh
+# repair: hand the storage tree back to the container user
+permissions:
+    sudo bash scripts/permissions.sh
 
 ## ===== lifecycle =====
 up: env

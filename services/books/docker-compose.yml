@@ -4,8 +4,8 @@ services:
     image: ghcr.io/calibrain/shelfmark:latest
     restart: always
     environment:
-      PUID: 1000
-      PGID: 1000
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
       TZ: ${TIMEZONE}
     volumes:
       - ${CONFIG_DIR}/shelfmark:/config
@@ -18,8 +18,8 @@ services:
     image: lscr.io/linuxserver/kavita:latest
     restart: always
     environment:
-      PUID: 1000
-      PGID: 1000
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
       TZ: ${TIMEZONE}
     volumes:
       - ${CONFIG_DIR}/kavita:/config
