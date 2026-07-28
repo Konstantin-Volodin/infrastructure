@@ -16,9 +16,28 @@ services:
       - IMMICH_OIDC_SECRET=${IMMICH_OIDC_SECRET}
       - MEALIE_OIDC_SECRET=${MEALIE_OIDC_SECRET}
       - ACTUAL_OIDC_SECRET=${ACTUAL_OIDC_SECRET}
+    depends_on:
+      - authelia-redis
     volumes:
       - ./configuration.yml:/config/configuration.yml:ro
       - ./assets:/config/assets:ro
       - ${CONFIG_DIR}/authelia:/data
+    networks:
+      - proxy
+
+  # Session store. Authelia keeps sessions in memory without this, so every
+  # restart is a fresh login everywhere. Nothing else uses it, and it is never
+  # published — only reachable from inside the proxy network.
+  authelia-redis:
+    container_name: authelia-redis
+    image: redis:7-alpine
+    restart: unless-stopped
+    # Sessions are worth keeping across a reboot, not just a restart, so they
+    # get flushed to disk rather than held purely in memory.
+    command: redis-server --save 60 1 --appendonly yes
+    environment:
+      TZ: ${TIMEZONE}
+    volumes:
+      - ${CONFIG_DIR}/authelia-redis:/data
     networks:
       - proxy

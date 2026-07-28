@@ -252,6 +252,7 @@ create_storage_tree() {
     local root_dirs=(
         "$CONFIG_DIR/authelia/secrets"
         "$CONFIG_DIR/authelia/log"
+        "$CONFIG_DIR/authelia-redis"
         "$CONFIG_DIR/caddy/data"
         "$CONFIG_DIR/caddy/config"
         "$CONFIG_DIR/ca"
