@@ -36,6 +36,11 @@ update:
     sudo docker image prune -f > /dev/null
     @echo "  [✓] images pulled; changed services recreated."
 
+## ===== maintenance =====
+# run the reaper now instead of waiting for its next cycle; -dr to preview
+reap *args:
+    sudo {{compose}} exec qbit-manage qbit-manage -r -tnhl -sl {{args}}
+
 ## ===== check =====
 validate:
     sudo bash scripts/validate.sh

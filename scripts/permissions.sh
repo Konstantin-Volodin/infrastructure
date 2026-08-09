@@ -12,7 +12,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 # authelia, caddy and pi-hole run as root.
 owned_paths() {
     local name
-    for name in qbittorrent prowlarr sonarr radarr jellyfin \
+    for name in qbittorrent qbit-manage prowlarr sonarr radarr jellyfin \
                 shelfmark kavita mealie budget; do
         printf '%s\n' "${CONFIG_DIR}/${name}"
     done

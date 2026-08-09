@@ -1,0 +1,73 @@
+# Reaping torrents whose library copy is gone.
+#
+# Sonarr and Radarr import by hardlink, so a finished torrent has two names on
+# disk: the download and the library entry. Deleting from the Jellyfin, Sonarr
+# or Radarr UI drops the library name and qBittorrent keeps seeding the other.
+# Link count is the tell — one name means nothing in the library wants it.
+#
+# Nothing here removes a torrent on a timer. Removal is gated on that missing
+# hardlink, which only happens when you delete something in a UI.
+
+commands:
+  tag_nohardlinks: true
+  share_limits: true
+  cat_update: false
+  tag_update: false
+  rem_orphaned: false
+  rem_unregistered: false
+  recheck: false
+
+qbt:
+  # This container shares gluetun's network namespace with qBittorrent, so the
+  # API is on localhost and its local-address auth bypass covers us.
+  host: "localhost:8080"
+  user:
+  pass:
+
+settings:
+  nohardlinks_tag: noHL
+  force_auto_tmm: false
+  tag_nohardlinks_filter_completed: true
+  share_limits_filter_completed: true
+  disable_qbt_default_share_limits: true
+
+directory:
+  # Downloads only. The library sits at /data/tv and /data/movies, outside this
+  # root, and that is precisely what makes a surviving hardlink detectable —
+  # ignore_root_dir discounts links found inside root_dir. Widening this to
+  # /data would hide every library hardlink and mark the whole stack noHL.
+  root_dir: /data/downloads
+
+cat:
+  tv: /data/downloads/tv
+  movies: /data/downloads/movies
+
+nohardlinks:
+  tv:
+  movies:
+
+share_limits:
+  # A torrent lands here only once it has lost its library copy. The day is a
+  # safety net, not a policy: a torrent that just finished has not been
+  # imported yet and looks identical to one you deleted. Seeding time counts
+  # from completion, so anything deleted in a UI is long past it.
+  noHL:
+    priority: 1
+    include_all_tags:
+      - noHL
+    max_seeding_time: 1d
+    max_ratio: -1
+    cleanup: true
+    share_limit_action: Stop
+
+  # Everything still in the library. No limits, no cleanup, seed forever.
+  default:
+    priority: 999
+    max_ratio: -1
+    max_seeding_time: -1
+    cleanup: false
+    add_group_to_tag: false
+
+# Cleanup unlinks immediately, the same as the old script did.
+recyclebin:
+  enabled: false

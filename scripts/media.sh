@@ -44,6 +44,27 @@ configure_qbittorrent() {
     set_category movies /data/downloads/movies
 }
 
+# Seed forever — nothing retires a torrent on its own, `just reap` decides.
+configure_seeding() {
+    local prefs='{"max_ratio_enabled":false,"max_seeding_time_enabled":false,"max_inactive_seeding_time_enabled":false}'
+
+    if gcurl -X POST "http://localhost:8080/api/v2/app/setPreferences" \
+            --data-urlencode "json=${prefs}" >/dev/null 2>&1
+    then ok   "qBittorrent: seeding limits disabled globally."
+    else warn "qBittorrent: could not disable global seeding limits."
+    fi
+
+    # Global prefs miss torrents carrying their own limits; -1 is unlimited.
+    if gcurl -X POST "http://localhost:8080/api/v2/torrents/setShareLimits" \
+            --data-urlencode "hashes=all" \
+            --data-urlencode "ratioLimit=-1" \
+            --data-urlencode "seedingTimeLimit=-1" \
+            --data-urlencode "inactiveSeedingTimeLimit=-1" >/dev/null 2>&1
+    then ok   "qBittorrent: existing torrents set to seed indefinitely."
+    else warn "qBittorrent: could not clear per-torrent share limits."
+    fi
+}
+
 DC_BODY_TEMPLATE='{
   "enable": true, "protocol": "torrent", "priority": 1,
   "name": "qBittorrent", "implementation": "QBittorrent",
@@ -141,6 +162,7 @@ main() {
 
     info "configuring media stack mesh..."
     configure_qbittorrent
+    configure_seeding
     configure_arr Sonarr 8989 sonarr tv     /data/tv
     configure_arr Radarr 7878 radarr movies /data/movies
     configure_prowlarr
